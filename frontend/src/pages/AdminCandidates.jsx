@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
-// Added onSnapshot and query for live updates
 import { collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, getDocs } from "firebase/firestore";
 import { PlusCircle, Trash2, Users, Loader2, Database } from 'lucide-react';
 
@@ -10,24 +9,24 @@ const AdminCandidates = () => {
   const [category, setCategory] = useState('president');
   const [loading, setLoading] = useState(false);
 
-  // --- LIVE LISTENER (NO REFRESH NEEDED) ---
   useEffect(() => {
-    // We create a query that listens to the 'candidates' collection
     const q = query(collection(db, "candidates"), orderBy("category", "asc"));
     
+    // Ditambah blok error catcher untuk tahu jika Firestore block rules kau yang bermasalah
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const data = [];
-      snapshot.forEach((doc) => {
-        data.push({ id: doc.id, ...doc.data() });
+      snapshot.forEach((d) => {
+        data.push({ id: d.id, ...d.data() });
       });
       setCandidates(data);
+    }, (error) => {
+      console.error("Firebase Rules Error atau Connection Error:", error);
+      alert("Firestore Error: " + error.message);
     });
 
-    // Cleanup listener on unmount
     return () => unsubscribe();
   }, []);
 
-  // --- INITIALIZE COLLECTION (SAFEGUARD) ---
   const initializeCollection = async () => {
     setLoading(true);
     try {
@@ -36,11 +35,11 @@ const AdminCandidates = () => {
         await addDoc(collection(db, "candidates"), {
           name: "Test Candidate",
           category: "president",
-          role: "Position: President"
+          role: "Candidate President"
         });
-        alert("Collection 'candidates' initialized with a test entry!");
+        alert("Koleksi 'candidates' diinisialisasi!");
       } else {
-        alert("Collection already exists and has data.");
+        alert("Koleksi sudah mempunyai data.");
       }
     } catch (err) {
       alert("Error: " + err.message);
@@ -55,26 +54,26 @@ const AdminCandidates = () => {
     
     setLoading(true);
     try {
+      const formattedCategory = category.charAt(0).toUpperCase() + category.slice(1);
       await addDoc(collection(db, "candidates"), {
-        name: name,
+        name: name.trim(),
         category: category,
-        role: `Position: ${category.charAt(0).toUpperCase() + category.slice(1)}`
+        role: `Candidate ${formattedCategory === 'Deputy' ? 'Deputy President' : formattedCategory}`
       });
       setName('');
-      // No need to call fetchCandidates() because onSnapshot handles it!
     } catch (error) {
-      console.error("Error adding candidate:", error);
+      console.error("Ralat menambah:", error);
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id) => {
-    if(window.confirm("Pasti mahu padam calon ini?")) {
+    if (window.confirm("Pasti mahu padam?")) {
       try {
         await deleteDoc(doc(db, "candidates", id));
       } catch (err) {
-        alert("Error deleting: " + err.message);
+        alert("Ralat memadam: " + err.message);
       }
     }
   };
@@ -91,22 +90,20 @@ const AdminCandidates = () => {
           <button 
             onClick={initializeCollection}
             className="p-2 text-slate-400 hover:text-blue-600 transition-colors"
-            title="Initialize Collection"
           >
             <Database size={20} />
           </button>
         </div>
 
-        {/* Form Tambah Calon */}
         <form onSubmit={handleAddCandidate} className="space-y-4 mb-10 bg-slate-50 p-6 rounded-2xl border border-slate-100">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <select 
               value={category} 
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full px-4 py-4 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500 font-bold text-slate-600"
+              className="w-full px-4 py-4 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500 font-bold text-slate-600 bg-white"
             >
               <option value="president">President</option>
-              <option value="deputy">Deputy</option>
+              <option value="deputy">Deputy President</option>
               <option value="vice">Vice President</option>
               <option value="secretary">Secretary</option>
               <option value="treasurer">Treasurer</option>
@@ -118,21 +115,21 @@ const AdminCandidates = () => {
               placeholder="Nama Calon Baru..." 
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-4 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500 font-medium"
+              className="w-full px-4 py-4 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500 font-medium bg-white"
+              required
             />
           </div>
 
           <button 
             type="submit" 
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-700 transition-all active:scale-95 shadow-lg shadow-blue-100"
+            className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-700 transition-all disabled:bg-slate-300"
           >
             {loading ? <Loader2 className="animate-spin" size={20} /> : <PlusCircle size={20} />}
             Tambah Calon Live
           </button>
         </form>
 
-        {/* Senarai Calon Semasa */}
         <div className="space-y-3">
           <div className="flex items-center justify-between px-2">
             <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest">Senarai Calon Live</h2>
@@ -146,7 +143,7 @@ const AdminCandidates = () => {
               <div key={c.id} className="flex items-center justify-between p-5 bg-white border-2 border-slate-50 rounded-2xl hover:border-blue-200 transition-all group shadow-sm">
                 <div>
                   <p className="font-black text-slate-800 text-lg">{c.name}</p>
-                  <p className="text-[10px] font-bold text-blue-500 uppercase bg-blue-50 px-2 py-0.5 rounded w-fit">{c.category}</p>
+                  <p className="text-[10px] font-bold text-blue-500 uppercase bg-blue-50 px-2 py-0.5 rounded w-fit mt-1">{c.category}</p>
                 </div>
                 <button 
                   onClick={() => handleDelete(c.id)} 
@@ -157,8 +154,8 @@ const AdminCandidates = () => {
               </div>
             ))
           ) : (
-            <div className="text-center py-10 border-2 border-dashed border-slate-100 rounded-3xl">
-               <p className="text-slate-400 font-medium">Tiada calon dijumpai. Sila tambah calon di atas.</p>
+            <div className="text-center py-10 border-2 border-dashed border-slate-100 rounded-3xl bg-white">
+               <p className="text-slate-400 font-medium text-sm">Tiada calon dijumpai. Sila masukkan nama calon di atas.</p>
             </div>
           )}
         </div>
