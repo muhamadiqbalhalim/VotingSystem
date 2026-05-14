@@ -8,6 +8,7 @@ app.use(cors());
 app.use(express.json());
 
 // Database sementara (Data akan hilang jika server restart)
+// Ditambah fullName dan company untuk match dengan frontend
 let users = []; 
 
 // Data kiraan undi mengikut calon
@@ -25,23 +26,25 @@ app.use((req, res, next) => {
 
 // 1. Register - Jana token unik untuk setiap user
 app.post('/api/register', (req, res) => {
-    const { email, password } = req.body;
+    const { email, password, fullName, company } = req.body;
     
     if (users.find(u => u.email === email)) {
         return res.status(400).json({ message: "Email sudah berdaftar!" });
     }
 
-    // Jana token rawak
+    // Jana token rawak (Match logic frontend)
     const newToken = `VOTE-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
     
     users.push({ 
         email, 
         password, 
+        fullName,   // Data baru
+        company,    // Data baru (Ganti department)
         token: newToken, 
         hasVoted: false 
     });
 
-    console.log(`User berdaftar: ${email} | Token: ${newToken}`);
+    console.log(`User berdaftar: ${fullName} (${company}) | Token: ${newToken}`);
     res.json({ message: "Pendaftaran Berjaya! Sila Login." });
 });
 
@@ -56,11 +59,13 @@ app.post('/api/login', (req, res) => {
     
     res.json({ 
         token: user.token, 
+        fullName: user.fullName,
+        company: user.company,
         hasVoted: user.hasVoted 
     });
 });
 
-// 3. Forgot Password - Mencari password dalam database sementara
+// 3. Forgot Password
 app.post('/api/forgot-password', (req, res) => {
     const { email } = req.body;
     const user = users.find(u => u.email === email);
@@ -69,14 +74,13 @@ app.post('/api/forgot-password', (req, res) => {
         return res.status(404).json({ message: "Emel tidak dijumpai!" });
     }
 
-    // Menghantar password secara terus (Development mode sahaja)
     res.json({ 
         success: true, 
-        message: `Password anda adalah: ${user.password}` 
+        message: `Password untuk ${user.fullName} adalah: ${user.password}` 
     });
 });
 
-// 4. Verify Token - Cek status token sebelum masuk ke Ballot
+// 4. Verify Token
 app.post('/api/verify-token', (req, res) => {
     const { token } = req.body;
     const user = users.find(u => u.token === token);
@@ -89,10 +93,10 @@ app.post('/api/verify-token', (req, res) => {
         return res.status(400).json({ message: "Token has been used." });
     }
     
-    res.json({ success: true });
+    res.json({ success: true, user: { name: user.fullName, company: user.company } });
 });
 
-// 5. Submit Vote (Burn Token) - Terima undi dan kemaskini keputusan live
+// 5. Submit Vote
 app.post('/api/vote', (req, res) => {
     const { token, candidateName } = req.body;
     const user = users.find(u => u.token === token);
@@ -102,22 +106,20 @@ app.post('/api/vote', (req, res) => {
             return res.status(400).json({ message: "Token ini sudah digunakan!" });
         }
 
-        // Tandakan user sudah mengundi
         user.hasVoted = true; 
 
-        // Tambah kiraan undi jika nama calon sah
         if (votes.hasOwnProperty(candidateName)) {
             votes[candidateName] += 1;
         }
 
-        console.log(`Undi diterima untuk ${candidateName}. Token ${token} dinyahaktifkan.`);
+        console.log(`Undi dari ${user.company} diterima untuk ${candidateName}.`);
         return res.json({ success: true, message: "Undi berjaya direkodkan!" });
     }
 
     res.status(400).json({ message: "Gagal memproses undi. Token tidak sah." });
 });
 
-// 6. Get Live Results - Untuk paparan progress bar
+// 6. Get Live Results
 app.get('/api/results', (req, res) => {
     const totalVotes = Object.values(votes).reduce((a, b) => a + b, 0);
     res.json({ 
@@ -126,10 +128,7 @@ app.get('/api/results', (req, res) => {
     });
 });
 
-app.listen(PORT, () => {
-    console.log(`🚀 Server Backend berjalan di port ${PORT}`);
-});
-// Endpoint untuk hantar data ke Google Sheets (Report Formal)
+// 7. Generate Report - Ditambah info Company
 app.post('/api/generate-report', async (req, res) => {
     try {
         const totalVotes = Object.values(votes).reduce((a, b) => a + b, 0);
@@ -137,18 +136,21 @@ app.post('/api/generate-report', async (req, res) => {
             timestamp: new Date().toLocaleString('ms-MY'),
             results: votes,
             total: totalVotes,
+            voter_details: users.map(u => ({ name: u.fullName, company: u.company, status: u.hasVoted })),
             official_stamp: "CERTIFIED BY E-VOTING SYSTEM"
         };
 
-        // Note: Di sini kita akan panggil Google Sheets API atau 
-        // cara paling mudah guna Webhook/AppScript (Aku terangkan di bawah)
-        console.log("Generating Official Report to Google Sheets...", reportData);
+        console.log("Generating Official Report with Company data...", reportData);
         
         res.json({ 
             success: true, 
-            message: "Report berjaya dihantar ke Google Sheets untuk rekod rasmi." 
+            message: "Report berjaya dijana dengan data syarikat." 
         });
     } catch (err) {
         res.status(500).json({ message: "Gagal menjana report." });
     }
+});
+
+app.listen(PORT, () => {
+    console.log(`🚀 Server Backend berjalan di port ${PORT}`);
 });
