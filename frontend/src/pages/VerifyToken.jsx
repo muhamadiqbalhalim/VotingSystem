@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShieldCheck, ChevronLeft, AlertCircle, Loader2 } from 'lucide-react';
 
-// Import config database dari firebase
+// Import config database dari firebase lokal
 import { db } from '../firebase';
-import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+
+// KEMASKINI: Menggunakan import standard NPM (Bukan lagi gstatic URL)
+import { collection, query, where, getDocs } from "firebase/firestore";
 
 const VerifyToken = () => {
   const [token, setToken] = useState('');
@@ -32,10 +34,10 @@ const VerifyToken = () => {
       let userData = null;
       let userDocId = null;
 
-      // Ambil data dari hasil carian
-      querySnapshot.forEach((doc) => {
-        userData = doc.data();
-        userDocId = doc.id;
+      // KEMASKINI LOGIK: Menukar parameter 'doc' kepada 'd' untuk mengelakkan 'shadowing variable clash' dengan fungsi doc() dari Firestore
+      querySnapshot.forEach((d) => {
+        userData = d.data();
+        userDocId = d.id;
       });
 
       // 3. Semak jika token ini sudah digunakan (hasVoted == true)

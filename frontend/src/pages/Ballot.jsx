@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle, AlertCircle, ChevronLeft, Lock, CheckSquare, Square, Loader2, Users } from 'lucide-react';
+import { CheckCircle, AlertCircle, ChevronLeft, Lock, CheckSquare, Square, Loader2 } from 'lucide-react';
 
-// Import config database dari firebase
+// Import config database dari firebase lokal
 import { db } from '../firebase';
 import { doc, updateDoc, collection, addDoc, onSnapshot } from "firebase/firestore";
 
@@ -12,9 +12,7 @@ const Ballot = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
-  // State untuk Live Counter & Live Candidates
-  const [totalVoters, setTotalVoters] = useState(0);
-  const [votedCount, setVotedCount] = useState(0);
+  // State untuk Live Candidates
   const [liveCandidates, setLiveCandidates] = useState({
     president: [], deputy: [], vice: [], secretary: [], treasurer: [], exco: []
   });
@@ -32,35 +30,32 @@ const Ballot = () => {
   ];
 
   useEffect(() => {
-    // 1. LIVE FETCH: Tarik nama calon dari database masa nyata
+    // 1. SAFEGUARD SECURITY: Tendang pengundi jika tiada token aktif dalam sesi
+    const activeToken = sessionStorage.getItem('activeVotingToken');
+    const voterDocId = sessionStorage.getItem('voterDocId');
+    if (!activeToken || !voterDocId) {
+      navigate('/dashboard');
+      return;
+    }
+
+    // 2. LIVE FETCH: Tarik nama calon dari database masa nyata
     const unsubCandidates = onSnapshot(collection(db, "candidates"), (snapshot) => {
       const grouped = { president: [], deputy: [], vice: [], secretary: [], treasurer: [], exco: [] };
-      snapshot.forEach(doc => {
-        const data = doc.data();
+      
+      // KEMASKINI LOGIK: Tukar parameter 'doc' kepada 'd' untuk elak clashing skop pembolehubah
+      snapshot.forEach(d => {
+        const data = d.data();
         if (grouped[data.category]) {
-          grouped[data.category].push({ id: doc.id, ...data });
+          grouped[data.category].push({ id: d.id, ...data });
         }
       });
       setLiveCandidates(grouped);
     });
 
-    // 2. Optional: Live Counter (Comment out jika tidak mahu guna)
-    const unsubVoters = onSnapshot(collection(db, "voting"), (snapshot) => {
-      let total = 0;
-      let voted = 0;
-      snapshot.forEach((doc) => {
-        total += 1;
-        if (doc.data().hasVoted) voted += 1;
-      });
-      setTotalVoters(total);
-      setVotedCount(voted);
-    });
-
     return () => {
       unsubCandidates();
-      unsubVoters();
     };
-  }, []);
+  }, [navigate]);
 
   const currentCategory = categories[currentStep];
   const currentCandidates = liveCandidates[currentCategory.id] || [];
@@ -118,6 +113,7 @@ const Ballot = () => {
           .map(c => c.name);
       });
 
+      // Simpan rekod undian ke database
       await addDoc(collection(db, "voting_results"), {
         voterDocId: voterDocId,
         voterToken: activeToken,
@@ -125,12 +121,15 @@ const Ballot = () => {
         timestamp: new Date().toISOString()
       });
 
+      // Kemaskini status pengundi dalam pangkalan data
       await updateDoc(doc(db, "voting", voterDocId), { hasVoted: true });
 
+      // Bersihkan storan sesi untuk perlindungan privasi
       sessionStorage.removeItem('activeVotingToken');
       sessionStorage.removeItem('voterDocId');
       
-      navigate('/waiting-room'); 
+      // KEMASKINI NAVIGASI: Selaraskan terus ke laluan '/waiting' yang sah
+      navigate('/waiting'); 
       
     } catch (err) {
       console.error("Ralat hantar undian:", err);

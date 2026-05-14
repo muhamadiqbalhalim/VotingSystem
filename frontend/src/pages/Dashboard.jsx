@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Ticket, Copy, CheckCircle2, LogOut, User, Building2, AlertCircle, Loader2, Trophy } from 'lucide-react';
+import { Ticket, Copy, CheckCircle2, LogOut, User, Building2, Loader2, Trophy } from 'lucide-react';
 
-// Import auth & db dari firebase
+// Import auth & db dari konfigurasi lokal firebase kita
 import { auth, db } from '../firebase';
-import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+
+// KEMASKINI: Menggunakan import standard NPM (Bukan lagi gstatic URL)
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 
 const Dashboard = () => {
   const [userData, setUserData] = useState(null);
