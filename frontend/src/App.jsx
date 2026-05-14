@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Register from './pages/Register';
 import Login from './pages/Login';
 import ForgotPassword from './pages/ForgotPassword';
@@ -17,7 +17,7 @@ import AdminCandidates from './pages/AdminCandidates';
 function App() {
   return (
     <Router>
-      {/* LETAK HEADER DI SINI - Di luar Routes supaya ia kekal di semua page */}
+      {/* Header kekal di semua halaman */}
       <Header />
       
       <Routes>
@@ -37,11 +37,19 @@ function App() {
         
         {/* Halaman Keputusan Live & Menunggu */}
         <Route path="/results" element={<Results />} />
+        
+        {/* 🚨 PEMBETULAN IMPERATIF: Sokong kedua-dua path /waiting DAN /waiting-room */}
+        <Route path="/waiting" element={<WaitingRoom />} />
         <Route path="/waiting-room" element={<WaitingRoom />} />
+        
         <Route path="/winner" element={<Winner />} />
 
-        {/* Halaman Pengurusan Admin */}
+        {/* 🚨 PEMBETULAN ADMIN: Sokong kedua-dua kes tulisan URL admin */}
         <Route path="/admin-candidates" element={<AdminCandidates />} />
+        <Route path="/admincandidates" element={<AdminCandidates />} />
+
+        {/* Catch-all route: Jika URL merepek, hantar balik ke login supaya tak blank putih */}
+        <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </Router>
   );
