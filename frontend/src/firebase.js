@@ -1,7 +1,7 @@
-// src/firebase.js
-import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js"; 
-import { getFirestore } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
+// Guna import pendek seperti ini (Vite akan cari dalam node_modules)
+import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
     apiKey: "AIzaSyCno2NNkzt3gLdC4CfZ4TlhwESQJgI_IXk",
@@ -15,6 +15,6 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Export service yang kita nak guna
+// Export service untuk guna dalam Ballot.jsx, Register.jsx, dll
 export const db = getFirestore(app);
 export const auth = getAuth(app);

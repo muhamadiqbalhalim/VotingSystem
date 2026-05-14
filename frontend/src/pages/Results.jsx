@@ -9,10 +9,11 @@ const Results = () => {
 
   const fetchResults = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/results');
-      setData(res.data);
-    } catch (err) {
-      console.error("Gagal ambil data");
+  const API_URL = import.meta.env.VITE_API_URL;
+  const res = await axios.get(`${API_URL}/api/results`);      
+  setData(res.data);
+      } catch (err) {
+        console.error("Gagal ambil data");
     }
   };
 

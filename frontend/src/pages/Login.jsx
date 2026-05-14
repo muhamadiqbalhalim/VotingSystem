@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Mail, LogIn, AlertCircle, HelpCircle, Loader2 } from 'lucide-react';
 
-// Import config & service dari firebase.js
-import { auth, db } from './firebase'; 
-import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+// Import config & service dari firebase.js (Gunakan npm syntax)
+import { auth, db } from '../firebase'; 
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -24,23 +24,27 @@ const Login = () => {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // 2. Ambil data tambahan (Voter Token) dari Firestore
-      const userDoc = await getDoc(doc(db, "users", user.uid));
+      // 2. Ambil data tambahan dari Firestore - UPDATED TO "voting"
+      const userDoc = await getDoc(doc(db, "voting", user.uid));
       
       if (userDoc.exists()) {
         const userData = userDoc.data();
         
-        // 3. Simpan token dalam localStorage untuk kegunaan Dashboard
+        // 3. Simpan data ke localStorage untuk Dashboard
+        const userCompany = userData.company || userData.department || "N/A";
+        
         localStorage.setItem('voterToken', userData.voterToken);
+        localStorage.setItem('userCompany', userCompany);
+        localStorage.setItem('userName', userData.fullName);
         
         // 4. Bawa user ke Dashboard
         navigate('/dashboard'); 
       } else {
-        setError("Data profil tidak dijumpai. Sila hubungi admin.");
+        setError("Profil tidak dijumpai dalam koleksi 'voting'. Sila hubungi admin.");
       }
     } catch (err) {
-      // Handle error login (Email/Password salah)
       console.error(err);
+      // Handle Firebase specific error codes
       if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
         setError('Email atau Password salah!');
       } else {
@@ -55,7 +59,6 @@ const Login = () => {
     <div className="flex items-center justify-center min-h-screen bg-[#f8f9fd] p-4 font-sans">
       <div className="w-full max-w-md p-10 bg-white rounded-[2.5rem] shadow-2xl shadow-blue-100 border border-white">
         
-        {/* Header Section */}
         <div className="flex flex-col items-center mb-8">
           <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mb-4 text-blue-600">
             <LogIn size={32} />
@@ -66,7 +69,6 @@ const Login = () => {
           </p>
         </div>
 
-        {/* Form Section */}
         <form onSubmit={handleLogin} className="space-y-4">
           <div className="relative">
             <Mail className="absolute left-4 top-4 text-slate-300" size={20} />
@@ -90,7 +92,6 @@ const Login = () => {
             />
           </div>
 
-          {/* Forgot Password Link */}
           <div className="flex justify-end">
             <button 
               type="button"
@@ -101,7 +102,6 @@ const Login = () => {
             </button>
           </div>
 
-          {/* Error Message */}
           {error && (
             <div className="flex items-center gap-2 p-4 bg-red-50 text-red-600 rounded-xl text-xs font-bold border border-red-100 animate-shake">
               <AlertCircle size={16} />
@@ -109,7 +109,6 @@ const Login = () => {
             </div>
           )}
 
-          {/* Login Button */}
           <button 
             disabled={loading}
             className="w-full bg-[#638cf0] hover:bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-blue-200 transition-all active:scale-95 disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
@@ -124,7 +123,6 @@ const Login = () => {
           </button>
         </form>
 
-        {/* Footer Link */}
         <p className="text-center text-sm text-slate-400 mt-8">
           Belum daftar? <span onClick={() => navigate('/')} className="text-blue-600 font-bold cursor-pointer hover:underline">Daftar sekarang</span>
         </p>

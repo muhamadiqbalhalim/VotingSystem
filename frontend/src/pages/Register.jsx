@@ -3,15 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, ShieldCheck, ArrowRight, User, Building2, Loader2 } from 'lucide-react';
 
 // Import config yang kita buat tadi
-import { auth, db } from './firebase'; 
-import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
-import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+import { auth, db } from '../firebase'; 
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
 
 const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [department, setDepartment] = useState('');
+  const [company, setCompany] = useState(''); 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -29,13 +29,12 @@ const Register = () => {
       // 2. Jana Token Undian Unik (VOTE-XXXX)
       const newToken = `VOTE-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
 
-      // 3. Simpan data tambahan ke Firestore
-      // Kita guna user.uid sebagai ID dokumen supaya senang nak cari nanti
-      await setDoc(doc(db, "users", user.uid), {
+      // 3. Simpan data tambahan ke Firestore dalam koleksi "voting"
+      await setDoc(doc(db, "voting", user.uid), {
         uid: user.uid,
         fullName: fullName,
         email: email,
-        department: department,
+        company: company, 
         voterToken: newToken,
         hasVoted: false,
         createdAt: new Date().toISOString()
@@ -44,7 +43,6 @@ const Register = () => {
       alert("Pendaftaran Berjaya! Sila login untuk dapatkan token anda.");
       navigate('/login'); 
     } catch (err) {
-      // Handle error spesifik dari Firebase
       if (err.code === 'auth/email-already-in-use') {
         setError('Emel ini sudah didaftarkan.');
       } else if (err.code === 'auth/weak-password') {
@@ -58,7 +56,7 @@ const Register = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-[#f8f9fd] p-4">
+    <div className="flex items-center justify-center min-h-screen bg-[#f8f9fd] p-4 font-sans">
       <div className="w-full max-w-md p-8 bg-white/70 backdrop-blur-xl rounded-[2.5rem] shadow-2xl border border-white/50">
         <div className="flex flex-col items-center mb-8">
           <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mb-4 text-blue-600 shadow-inner">
@@ -81,21 +79,16 @@ const Register = () => {
             />
           </div>
 
-          {/* Input Department */}
+          {/* Input Company */}
           <div className="relative">
             <Building2 className="absolute left-4 top-4 text-slate-400" size={20} />
-            <select 
-              className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-blue-400 focus:outline-none transition-all appearance-none text-slate-600"
-              onChange={(e) => setDepartment(e.target.value)}
+            <input 
+              type="text" 
+              placeholder="Company Name"
+              className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-blue-400 focus:outline-none transition-all"
+              onChange={(e) => setCompany(e.target.value)}
               required
-              defaultValue=""
-            >
-              <option value="" disabled>Select Department</option>
-              <option value="IT">Information Technology</option>
-              <option value="HR">Human Resources</option>
-              <option value="Finance">Finance</option>
-              <option value="Operations">Operations</option>
-            </select>
+            />
           </div>
 
           {/* Input Email */}

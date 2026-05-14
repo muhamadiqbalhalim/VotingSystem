@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { ShieldCheck, ChevronLeft, AlertCircle } from 'lucide-react';
+import { ShieldCheck, ChevronLeft, AlertCircle, Loader2 } from 'lucide-react';
+
+// Import config database dari firebase
+import { db } from '../firebase';
+import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
 
 const VerifyToken = () => {
   const [token, setToken] = useState('');
@@ -13,14 +16,45 @@ const VerifyToken = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    
     try {
-      const res = await axios.post('http://localhost:5000/api/verify-token', { token });
-      if (res.data.success) {
-        sessionStorage.setItem('activeVotingToken', token);
-        navigate('/ballot');
+      // 1. Buat carian (query) ke koleksi 'voting' di mana voterToken sama dengan token yang diisi
+      const q = query(collection(db, "voting"), where("voterToken", "==", token));
+      const querySnapshot = await getDocs(q);
+
+      // 2. Jika tiada dokumen dijumpai (Token salah)
+      if (querySnapshot.empty) {
+        setError('Token tidak sah atau tidak wujud dalam pangkalan data!');
+        setLoading(false);
+        return;
       }
+
+      let userData = null;
+      let userDocId = null;
+
+      // Ambil data dari hasil carian
+      querySnapshot.forEach((doc) => {
+        userData = doc.data();
+        userDocId = doc.id;
+      });
+
+      // 3. Semak jika token ini sudah digunakan (hasVoted == true)
+      if (userData.hasVoted) {
+        setError('Token ini sudah digunakan untuk mengundi!');
+        setLoading(false);
+        return;
+      }
+
+      // 4. Jika berjaya dan token belum digunakan
+      // Simpan token dan Doc ID untuk kegunaan di page Ballot nanti
+      sessionStorage.setItem('activeVotingToken', token);
+      sessionStorage.setItem('voterDocId', userDocId); 
+      
+      navigate('/ballot');
+
     } catch (err) {
-      setError(err.response?.data?.message || 'Token tidak sah!');
+      console.error("Ralat pengesahan token:", err);
+      setError('Ralat sistem. Sila cuba lagi.');
     } finally {
       setLoading(false);
     }
@@ -53,7 +87,7 @@ const VerifyToken = () => {
               <input 
                 type="text" 
                 placeholder="VOTE-XXXX"
-                className="w-full px-6 py-5 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-blue-400 focus:outline-none text-center font-black tracking-widest text-xl transition-all"
+                className="w-full px-6 py-5 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-blue-400 focus:outline-none text-center font-black tracking-widest text-xl transition-all uppercase"
                 onChange={(e) => setToken(e.target.value.toUpperCase())}
                 required
               />
@@ -67,9 +101,15 @@ const VerifyToken = () => {
 
             <button 
               disabled={loading}
-              className="w-full bg-[#638cf0] hover:bg-blue-600 text-white py-5 rounded-2xl font-black text-lg shadow-lg shadow-blue-100 transition-all active:scale-95 disabled:bg-slate-300"
+              className="w-full bg-[#638cf0] hover:bg-blue-600 text-white py-5 rounded-2xl font-black text-lg shadow-lg shadow-blue-100 transition-all active:scale-95 disabled:bg-slate-300 flex items-center justify-center gap-2"
             >
-              {loading ? 'Verifying...' : 'Verify & Enter Ballot'}
+              {loading ? (
+                <>
+                  <Loader2 className="animate-spin" size={20} /> Verifying...
+                </>
+              ) : (
+                'Verify & Enter Ballot'
+              )}
             </button>
           </form>
         </div>

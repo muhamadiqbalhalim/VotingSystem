@@ -7,10 +7,19 @@ import VerifyToken from './pages/VerifyToken';
 import Ballot from './pages/Ballot';
 import Dashboard from './pages/Dashboard';
 import Results from './pages/Results';
+import WaitingRoom from './pages/WaitingRoom';
+import Winner from './pages/Winner';
+
+// Import Komponen Header & Admin
+import Header from './components/Header';
+import AdminCandidates from './pages/AdminCandidates'; 
 
 function App() {
   return (
     <Router>
+      {/* LETAK HEADER DI SINI - Di luar Routes supaya ia kekal di semua page */}
+      <Header />
+      
       <Routes>
         {/* Halaman Pendaftaran Utama */}
         <Route path="/" element={<Register />} />
@@ -26,8 +35,13 @@ function App() {
         {/* Halaman Proses Undian */}
         <Route path="/ballot" element={<Ballot />} />
         
-        {/* Halaman Keputusan Live (Berdasarkan Gambar Replit) */}
+        {/* Halaman Keputusan Live & Menunggu */}
         <Route path="/results" element={<Results />} />
+        <Route path="/waiting-room" element={<WaitingRoom />} />
+        <Route path="/winner" element={<Winner />} />
+
+        {/* Halaman Pengurusan Admin */}
+        <Route path="/admin-candidates" element={<AdminCandidates />} />
       </Routes>
     </Router>
   );

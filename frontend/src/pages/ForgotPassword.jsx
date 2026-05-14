@@ -13,8 +13,9 @@ const ForgotPassword = () => {
     e.preventDefault();
     setError(''); setMessage('');
     try {
-      const res = await axios.post('http://localhost:5000/api/forgot-password', { email });
-      setMessage(res.data.message);
+  const API_URL = import.meta.env.VITE_API_URL;
+  const res = await axios.get(`${API_URL}/api/results`);      
+  setMessage(res.data.message);
     } catch (err) {
       setError(err.response?.data?.message || 'Emel tidak dijumpai.');
     }
