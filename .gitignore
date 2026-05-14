@@ -1,0 +1,16 @@
+# frontend
+frontend/node_modules
+frontend/dist
+
+# backend
+backend/node_modules
+backend/dist
+
+# env
+.env
+frontend/.env
+backend/.env
+
+# misc
+.vscode
+.DS_Store
