@@ -105,8 +105,8 @@ const AdminCandidates = () => {
               <option value="president">President</option>
               <option value="deputy">Deputy President</option>
               <option value="vice">Vice President</option>
-              <option value="secretary">Secretary</option>
-              <option value="treasurer">Treasurer</option>
+              <option value="secretary">Hon. Secretary</option>
+              <option value="treasurer">Hon. Treasurer</option>
               <option value="exco">Exco</option>
             </select>
 
@@ -142,8 +142,8 @@ const AdminCandidates = () => {
             candidates.map((c) => (
               <div key={c.id} className="flex items-center justify-between p-5 bg-white border-2 border-slate-50 rounded-2xl hover:border-blue-200 transition-all group shadow-sm">
                 <div>
+                  {/* Hanya nama calon dikekalkan di sini */}
                   <p className="font-black text-slate-800 text-lg">{c.name}</p>
-                  <p className="text-[10px] font-bold text-blue-500 uppercase bg-blue-50 px-2 py-0.5 rounded w-fit mt-1">{c.category}</p>
                 </div>
                 <button 
                   onClick={() => handleDelete(c.id)} 

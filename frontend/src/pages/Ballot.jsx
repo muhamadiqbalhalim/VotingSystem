@@ -1,48 +1,58 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle, AlertCircle, ChevronLeft, Lock, CheckSquare, Square, Loader2 } from 'lucide-react';
+import { CheckCircle, AlertCircle, Lock, CheckSquare, Square, Loader2 } from 'lucide-react';
 
-// Import config database dari firebase lokal
-import { db } from '../firebase';
-import { doc, updateDoc, collection, addDoc, onSnapshot } from "firebase/firestore";
+import { db, auth } from '../firebase';
+import { doc, updateDoc, collection, onSnapshot, getDoc } from "firebase/firestore";
 
 const Ballot = () => {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [selections, setSelections] = useState({}); 
+  const [selections, setSelections] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [activeCategory, setActiveCategory] = useState(null); 
+  const [votedCategories, setVotedCategories] = useState([]); 
   
-  // State untuk Live Candidates
   const [liveCandidates, setLiveCandidates] = useState({
     president: [], deputy: [], vice: [], secretary: [], treasurer: [], exco: []
   });
   
   const navigate = useNavigate();
 
-  // Konfigurasi Kategori
-  const categories = [
-    { id: 'president', title: 'President', max: 1 },
-    { id: 'deputy', title: 'Deputy President', max: 1 },
-    { id: 'vice', title: 'Vice President', max: 2 },
-    { id: 'secretary', title: 'Secretary', max: 1 },
-    { id: 'treasurer', title: 'Treasurer', max: 1 },
-    { id: 'exco', title: 'Exco', max: 10 }
-  ];
+  const categoriesConfig = {
+    president: { title: 'President', max: 1 },
+    deputy: { title: 'Deputy President', max: 1 },
+    vice: { title: 'Vice President', max: 1 },
+    secretary: { title: 'Hon. Secretary', max: 1 },
+    treasurer: { title: 'Hon. Treasurer', max: 1 },
+    exco: { title: 'Exco', max: 10 }
+  };
 
   useEffect(() => {
-    // 1. SAFEGUARD SECURITY: Tendang pengundi jika tiada token aktif dalam sesi
-    const activeToken = sessionStorage.getItem('activeVotingToken');
-    const voterDocId = sessionStorage.getItem('voterDocId');
-    if (!activeToken || !voterDocId) {
-      navigate('/dashboard');
+    if (!auth.currentUser) {
+      navigate('/login');
       return;
     }
 
-    // 2. LIVE FETCH: Tarik nama calon dari database masa nyata
+    const userUid = auth.currentUser.uid;
+
+    const unsubUser = onSnapshot(doc(db, "voting", userUid), (docSnap) => {
+        if (docSnap.exists()) {
+            const userData = docSnap.data();
+            setVotedCategories(userData.votedCategories || []);
+        }
+    });
+
+    const unsubSettings = onSnapshot(doc(db, "settings", "election"), (docSnap) => {
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            setActiveCategory(data.activeCategory || 'locked');
+        } else {
+            setActiveCategory('locked');
+        }
+    });
+
     const unsubCandidates = onSnapshot(collection(db, "candidates"), (snapshot) => {
       const grouped = { president: [], deputy: [], vice: [], secretary: [], treasurer: [], exco: [] };
-      
-      // KEMASKINI LOGIK: Tukar parameter 'doc' kepada 'd' untuk elak clashing skop pembolehubah
       snapshot.forEach(d => {
         const data = d.data();
         if (grouped[data.category]) {
@@ -53,83 +63,78 @@ const Ballot = () => {
     });
 
     return () => {
+      unsubUser();
+      unsubSettings();
       unsubCandidates();
     };
   }, [navigate]);
 
-  const currentCategory = categories[currentStep];
-  const currentCandidates = liveCandidates[currentCategory.id] || [];
-  const currentSelected = selections[currentCategory.id] || [];
+  const isLocked = activeCategory === 'locked' || !activeCategory;
+  const currentCategoryConfig = categoriesConfig[activeCategory];
+  const currentCandidates = liveCandidates[activeCategory] || [];
+  const hasVotedForCurrent = votedCategories.includes(activeCategory);
+  
+  const totalCategories = Object.keys(categoriesConfig).length;
+  const hasCompletedAll = votedCategories.length === totalCategories;
+
+  useEffect(() => {
+      setSelections([]);
+      setError('');
+  }, [activeCategory]);
 
   const toggleSelection = (candidateId) => {
     setError('');
-    let updatedSelection = [...currentSelected];
+    let updatedSelection = [...selections];
 
     if (updatedSelection.includes(candidateId)) {
       updatedSelection = updatedSelection.filter(id => id !== candidateId);
     } else {
-      if (updatedSelection.length >= currentCategory.max) {
-        setError(`Maksimum ${currentCategory.max} calon sahaja untuk kategori ini.`);
+      if (updatedSelection.length >= (currentCategoryConfig?.max || 1)) {
+        setError(`Maksimum ${currentCategoryConfig.max} calon sahaja untuk kategori ini.`);
         return;
       }
       updatedSelection.push(candidateId);
     }
 
-    setSelections({
-      ...selections,
-      [currentCategory.id]: updatedSelection
-    });
+    setSelections(updatedSelection);
   };
 
-  const handleNextOrSubmit = async () => {
-    if (currentSelected.length < 1) {
+  const handleSubmitVote = async () => {
+    if (selections.length < 1) {
       setError('Sila pilih sekurang-kurangnya 1 calon terlebih dahulu.');
-      return;
-    }
-
-    if (currentStep < categories.length - 1) {
-      setCurrentStep(currentStep + 1);
-      setError('');
-      window.scrollTo(0, 0); 
-      return;
-    }
-
-    const activeToken = sessionStorage.getItem('activeVotingToken');
-    const voterDocId = sessionStorage.getItem('voterDocId');
-
-    if (!activeToken || !voterDocId) {
-      setError('Sesi tamat. Sila verify token semula.');
       return;
     }
 
     setLoading(true);
     
     try {
-      const finalVotes = {};
-      categories.forEach(cat => {
-        const cands = liveCandidates[cat.id] || [];
-        finalVotes[cat.id] = cands
-          .filter(c => selections[cat.id]?.includes(c.id))
-          .map(c => c.name);
+      const userUid = auth.currentUser.uid;
+      const userRef = doc(db, "voting", userUid);
+
+      const selectedCandidateNames = currentCandidates
+        .filter(c => selections.includes(c.id))
+        .map(c => c.name);
+
+      const timestampMY = new Date().toLocaleString("en-US", { 
+        timeZone: "Asia/Kuala_Lumpur",
+        dateStyle: "medium",
+        timeStyle: "medium"
       });
 
-      // Simpan rekod undian ke database
-      await addDoc(collection(db, "voting_results"), {
-        voterDocId: voterDocId,
-        voterToken: activeToken,
-        votes: finalVotes,
-        timestamp: new Date().toISOString()
+      const docSnap = await getDoc(userRef);
+      const existingVotes = docSnap.exists() && docSnap.data().votes ? docSnap.data().votes : {};
+      const existingVotedCats = docSnap.exists() && docSnap.data().votedCategories ? docSnap.data().votedCategories : [];
+
+      await updateDoc(userRef, { 
+        votes: {
+            ...existingVotes,
+            [activeCategory]: selectedCandidateNames
+        },
+        votedCategories: [...existingVotedCats, activeCategory],
+        lastVotedAt: timestampMY
       });
-
-      // Kemaskini status pengundi dalam pangkalan data
-      await updateDoc(doc(db, "voting", voterDocId), { hasVoted: true });
-
-      // Bersihkan storan sesi untuk perlindungan privasi
-      sessionStorage.removeItem('activeVotingToken');
-      sessionStorage.removeItem('voterDocId');
       
-      // KEMASKINI NAVIGASI: Selaraskan terus ke laluan '/waiting' yang sah
-      navigate('/waiting'); 
+      setSelections([]);
       
     } catch (err) {
       console.error("Ralat hantar undian:", err);
@@ -139,31 +144,87 @@ const Ballot = () => {
     }
   };
 
+  // --- RENDER 1: SKRIN TAMAT SEPENUHNYA ---
+  if (hasCompletedAll) {
+    return (
+      <div className="min-h-screen bg-[#f8f9fd] p-4 flex flex-col items-center justify-center font-sans">
+          <div className="max-w-md w-full bg-white p-10 rounded-[3rem] shadow-2xl text-center border border-slate-100">
+              <div className="w-24 h-24 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <CheckCircle size={48} />
+              </div>
+              <h1 className="text-2xl font-black text-slate-800 tracking-tight mb-3">Tamat Sepenuhnya</h1>
+              <p className="text-slate-500 text-sm leading-relaxed mb-8">
+                Tahniah! Anda telah melengkapkan undian untuk ke-semua posisi jawatankuasa P2SA. Terima kasih atas kerjasama anda.
+              </p>
+              <button 
+                onClick={async () => {
+                  setLoading(true);
+                  try {
+                    const userUid = auth.currentUser.uid;
+                    await updateDoc(doc(db, "voting", userUid), {
+                      hasVoted: true
+                    });
+                    navigate('/dashboard');
+                  } catch (err) {
+                    console.error("Gagal update status akhir:", err);
+                    navigate('/dashboard');
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+                disabled={loading}
+                className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold shadow-lg hover:bg-slate-800 transition-all active:scale-95 flex items-center justify-center gap-2"
+              >
+                {loading ? <Loader2 className="animate-spin" size={20} /> : "Selesai & Kembali ke Lobi"}
+              </button>
+          </div>
+      </div>
+    );
+  }
+
+  // --- RENDER 2: WAITING/LOCKED SCREEN ---
+  if (isLocked) {
+      return (
+        <div className="min-h-screen bg-[#f8f9fd] p-4 flex flex-col items-center justify-center font-sans">
+            <div className="max-w-md w-full bg-white p-10 rounded-[3rem] shadow-xl text-center border border-slate-100">
+                <Lock className="w-16 h-16 text-blue-500 mx-auto mb-6 animate-pulse" />
+                <h1 className="text-2xl font-black text-slate-800 tracking-tight mb-2">Sila Tunggu</h1>
+                <p className="text-slate-500 text-sm leading-relaxed">Pencalonan sedang dijalankan atau undian telah ditutup sementara waktu. Skrin anda akan diaktifkan secara automatik oleh Pentadbir.</p>
+            </div>
+        </div>
+      );
+  }
+
+  // --- RENDER 3: ALREADY VOTED SCREEN (UNTUK KATEGORI SEMASA) ---
+  if (hasVotedForCurrent) {
+    return (
+        <div className="min-h-screen bg-[#f8f9fd] p-4 flex flex-col items-center justify-center font-sans">
+            <div className="max-w-md w-full bg-white p-10 rounded-[3rem] shadow-xl text-center border border-slate-100">
+                <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-6" />
+                <h1 className="text-2xl font-black text-slate-800 tracking-tight mb-2">Undian Direkodkan</h1>
+                <p className="text-slate-500 text-sm leading-relaxed">Anda telah selesai mengundi untuk kategori <strong>{currentCategoryConfig?.title}</strong>. Sila tunggu kategori seterusnya dibuka.</p>
+            </div>
+        </div>
+      );
+  }
+
+  // --- RENDER 4: BALLOT SCREEN (LIVE VOTING) ---
   return (
     <div className="min-h-screen bg-[#f8f9fd] p-4 flex flex-col items-center font-sans">
       <div className="max-w-md w-full">
         
-        {/* Header Section */}
         <header className="relative flex flex-col items-center mb-8 mt-2">
-          {currentStep > 0 && (
-            <button 
-              onClick={() => setCurrentStep(currentStep - 1)}
-              className="absolute left-0 top-1 p-2 bg-white rounded-full shadow-sm text-slate-400 hover:text-slate-600 transition-colors"
-            >
-              <ChevronLeft size={20} />
-            </button>
-          )}
-          <div className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] mb-2">
-            Step {currentStep + 1} of {categories.length}
+          <div className="text-[10px] font-black text-red-500 uppercase tracking-[0.3em] mb-2 animate-pulse flex items-center gap-1">
+             <span className="w-2 h-2 rounded-full bg-red-500 inline-block"></span> Live Voting
           </div>
           <h1 className="text-2xl font-black text-slate-800 tracking-tight text-center">
-            {currentCategory.title}
+            {currentCategoryConfig?.title}
           </h1>
-          <p className="text-slate-400 text-sm font-medium mt-1 text-center">
-            Please select 1 to {currentCategory.max} candidates
+          <p className="text-slate-400 text-sm font-medium mt-1 text-center leading-relaxed">
+            Sila pilih 1 hingga {currentCategoryConfig?.max} calon
           </p>
           <p className="text-blue-500 text-xs font-bold mt-2 bg-blue-50 px-3 py-1 rounded-full">
-            Selected: {currentSelected.length} / {currentCategory.max}
+            Dipilih: {selections.length} / {currentCategoryConfig?.max}
           </p>
         </header>
 
@@ -177,7 +238,7 @@ const Ballot = () => {
         <div className="space-y-4">
           {currentCandidates.length > 0 ? (
             currentCandidates.map((c) => {
-              const isSelected = currentSelected.includes(c.id);
+              const isSelected = selections.includes(c.id);
               return (
                 <div 
                   key={c.id}
@@ -192,11 +253,6 @@ const Ballot = () => {
                     <h3 className={`font-black text-lg transition-colors ${isSelected ? 'text-blue-600' : 'text-slate-800'}`}>
                       {c.name}
                     </h3>
-                    {c.role && (
-                      <p className="text-slate-400 text-[11px] leading-relaxed mt-1 font-medium italic">
-                        {c.role}
-                      </p>
-                    )}
                   </div>
                   
                   <div className={`shrink-0 mt-1 transition-all ${isSelected ? 'text-blue-500' : 'text-slate-300'}`}>
@@ -215,31 +271,20 @@ const Ballot = () => {
 
         <div className="mt-12 flex flex-col items-center pb-10">
           <button 
-            onClick={handleNextOrSubmit}
-            disabled={currentSelected.length === 0 || loading || currentCandidates.length === 0}
+            onClick={handleSubmitVote}
+            disabled={selections.length === 0 || loading || currentCandidates.length === 0}
             className={`w-full py-5 rounded-2xl font-black text-lg flex items-center justify-center gap-3 transition-all duration-300 shadow-xl ${
-              currentSelected.length > 0 && currentCandidates.length > 0
-              ? 'bg-[#638cf0] text-white hover:bg-blue-600 active:scale-95 shadow-blue-200' 
+              selections.length > 0 && currentCandidates.length > 0
+              ? 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95 shadow-blue-200' 
               : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
             }`}
           >
             {loading ? (
-              <><Loader2 className="animate-spin" size={22} /> Processing...</>
-            ) : currentStep === categories.length - 1 ? (
-              <><CheckCircle size={22} /> Submit All Votes</>
+              <><Loader2 className="animate-spin" size={22} /> Memproses...</>
             ) : (
-              <>Next Category <ChevronLeft size={22} className="rotate-180" /></>
+              <><CheckCircle size={22} /> Hantar Undian {currentCategoryConfig?.title}</>
             )}
           </button>
-          
-          {currentStep === categories.length - 1 && (
-            <div className="mt-8 p-4 bg-gray-50 rounded-2xl border border-gray-100 flex items-start gap-3 w-full">
-               <Lock size={14} className="text-slate-300 mt-0.5 shrink-0" />
-               <p className="text-[9px] text-slate-400 leading-normal">
-                 Rekod undian disulitkan. Hanya pentadbir sistem yang mempunyai akses kepada log undian untuk tujuan audit.
-               </p>
-            </div>
-          )}
         </div>
       </div>
     </div>
