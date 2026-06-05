@@ -418,6 +418,24 @@ const UserRegister = () => {
             </button>
 
           </form>
+          
+          <div className="mt-6 text-center">
+
+            <p className="text-sm text-slate-500">
+
+                Already have an account?
+
+                <button
+                type="button"
+                onClick={() => navigate('/login')}
+                className="ml-2 font-bold text-blue-600 hover:text-blue-700"
+                >
+                Login Here
+                </button>
+
+            </p>
+
+            </div>
 
           <div className="mt-10 flex items-center justify-center gap-2 text-slate-400">
 

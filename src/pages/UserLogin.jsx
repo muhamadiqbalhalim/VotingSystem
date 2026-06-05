@@ -260,6 +260,24 @@ return ( <div className="min-h-screen flex flex-col md:flex-row bg-slate-50 text
         </button>
       </form>
 
+      <div className="mt-6 text-center">
+
+        <p className="text-sm text-slate-500">
+
+          Don't have an account?
+
+          <button
+            type="button"
+            onClick={() => navigate('/register')}
+            className="ml-2 font-bold text-blue-600 hover:text-blue-700"
+          >
+            Register Here
+          </button>
+
+        </p>
+
+      </div>
+
       <div className="mt-10 flex items-center justify-center gap-2 text-slate-400">
         <HelpCircle size={14} />
         <span className="text-[10px] uppercase font-black tracking-widest">
