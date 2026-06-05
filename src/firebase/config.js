@@ -2,14 +2,18 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+import {
+  signInWithEmailAndPassword,
+  fetchSignInMethodsForEmail
+} from "firebase/auth";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyCno2NNkzt3gLdC4CfZ4TlhwESQJgI_IXk",
-    authDomain: "test-login2-e4c7f.firebaseapp.com",
-    projectId: "test-login2-e4c7f",
-    storageBucket: "test-login2-e4c7f.appspot.com",
-    messagingSenderId: "698181085162",
-    appId: "1:698181085162:web:3b91954eb1779a05894cd2"
+  apiKey: "AIzaSyDX6YoN5PHaFrfDPOldNUlYidRJP_Dbfzg",
+  authDomain: "p2sa-voting-5d615.firebaseapp.com",
+  projectId: "p2sa-voting-5d615",
+  storageBucket: "p2sa-voting-5d615.firebasestorage.app",
+  messagingSenderId: "440813085825",
+  appId: "1:440813085825:web:0a2fb36d4fd8c6fd429980"
 };
 
 // Initialize Firebase

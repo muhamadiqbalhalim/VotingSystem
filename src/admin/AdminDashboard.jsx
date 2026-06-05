@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { Users, FileText, Settings, Radio } from 'lucide-react';
 
-// Import komponen admin yang kita dah buat
-import AdminController from './AdminController';
-import AdminCandidates from './AdminCandidates';
-import AdminReport from './AdminReport';
+import AdminController from './VotingControl';
+import Candidates from './Candidates';
+import AdminReport from './Results';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('controller');
@@ -18,8 +17,8 @@ const AdminDashboard = () => {
           <div className="flex items-center gap-3 text-blue-400 mb-2">
             <Radio className="animate-pulse" size={28} />
           </div>
-          <h2 className="text-2xl font-black tracking-tight">Admin P2SA</h2>
-          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Sistem Kawalan Pusat</p>
+          <h2 className="text-2xl font-black tracking-tight">P2SA Admin</h2>
+          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Central Control Console</p>
         </div>
         
         <nav className="flex-1 p-4 space-y-3">
@@ -31,7 +30,7 @@ const AdminDashboard = () => {
               : 'text-slate-400 hover:bg-slate-800 hover:text-white'
             }`}
           >
-            <Settings size={20} /> Kawalan Live AGM
+            <Settings size={20} /> Election Controller
           </button>
           
           <button
@@ -42,7 +41,7 @@ const AdminDashboard = () => {
               : 'text-slate-400 hover:bg-slate-800 hover:text-white'
             }`}
           >
-            <Users size={20} /> Urus Calon
+            <Users size={20} /> Manage Candidates
           </button>
           
           <button
@@ -53,7 +52,7 @@ const AdminDashboard = () => {
               : 'text-slate-400 hover:bg-slate-800 hover:text-white'
             }`}
           >
-            <FileText size={20} /> Laporan & Audit
+            <FileText size={20} /> Reports & Audits
           </button>
         </nav>
       </div>
@@ -76,7 +75,7 @@ const AdminDashboard = () => {
           </div>
         )}
       </div>
-      
+
     </div>
   );
 };
