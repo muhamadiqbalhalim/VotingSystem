@@ -1,4 +1,3 @@
-import React from 'react';
 import logo from '../assets/image_be4763.png'; // Pastikan path ini betul
 
 const Header = () => {

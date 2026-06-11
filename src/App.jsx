@@ -1,4 +1,4 @@
-import React from 'react';
+import { lazy, Suspense } from 'react';
 import {
   BrowserRouter as Router,
   Routes,
@@ -6,20 +6,29 @@ import {
   Navigate
 } from 'react-router-dom';
 
-import UserLogin from './pages/UserLogin';
-import UserRegister from './pages/UserRegister';
-import UserDashboard from './pages/UserDashboard';
-import VotingPage from './pages/VotingPage';
+import ProtectedRoute from './routes/ProtectedRoute';
+import AdminRoute from './routes/AdminRoute';
 
-import AdminDashboard from './admin/AdminDashboard';
-import VotingControl from './admin/VotingControl';
-import Candidates from './admin/Candidates';
-import Results from './admin/Results';
+const UserLogin = lazy(() => import('./pages/UserLogin'));
+const UserRegister = lazy(() => import('./pages/UserRegister'));
+const UserDashboard = lazy(() => import('./pages/UserDashboard'));
+const VotingPage = lazy(() => import('./pages/VotingPage'));
+const AdminDashboard = lazy(() => import('./admin/AdminDashboard'));
+const VotingControl = lazy(() => import('./admin/VotingControl'));
+const Candidates = lazy(() => import('./admin/Candidates'));
+const Results = lazy(() => import('./admin/Results'));
+
+const AppLoading = () => (
+  <div className="min-h-screen bg-slate-50 flex items-center justify-center text-sm font-bold text-slate-500">
+    Loading secure workspace...
+  </div>
+);
 
 function App() {
   return (
     <Router>
-      <Routes>
+      <Suspense fallback={<AppLoading />}>
+        <Routes>
 
         {/* OPEN APP -> REGISTER */}
 
@@ -43,45 +52,68 @@ function App() {
         />
 
         {/* USER DASHBOARD */}
-
         <Route
           path="/dashboard"
-          element={<UserDashboard />}
+          element={
+            <ProtectedRoute>
+              <UserDashboard />
+            </ProtectedRoute>
+          }
         />
 
         {/* VOTING PAGE */}
 
         <Route
           path="/vote"
-          element={<VotingPage />}
+          element={
+            <ProtectedRoute>
+              <VotingPage />
+            </ProtectedRoute>
+          }
         />
 
         {/* ADMIN DASHBOARD */}
 
         <Route
           path="/admin"
-          element={<AdminDashboard />}
+          element={
+            <AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>
+          }
         />
 
         {/* ADMIN VOTING CONTROL */}
 
         <Route
           path="/admin/votingcontrol"
-          element={<VotingControl />}
+          element={
+            <AdminRoute>
+              <VotingControl />
+            </AdminRoute>
+          }
         />
 
         {/* ADMIN CANDIDATES */}
 
         <Route
           path="/admin/candidates"
-          element={<Candidates />}
+          element={
+            <AdminRoute>
+              <Candidates />
+            </AdminRoute>
+          }
         />
 
         {/* ADMIN RESULTS */}
 
         <Route
           path="/admin/results"
-          element={<Results />}
+          element={
+            <AdminRoute>
+              <Results />
+            </AdminRoute>
+          }
         />
 
         {/* UNKNOWN ROUTE */}
@@ -91,7 +123,8 @@ function App() {
           element={<Navigate to="/register" replace />}
         />
 
-      </Routes>
+        </Routes>
+      </Suspense>
     </Router>
   );
 }

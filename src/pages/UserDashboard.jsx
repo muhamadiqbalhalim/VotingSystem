@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   LogOut,
@@ -79,7 +79,7 @@ const UserDashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
         <Loader2
           className="animate-spin text-blue-600"
           size={40}
@@ -89,56 +89,56 @@ const UserDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-8">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 px-4 lg:px-8 py-12 lg:py-16 text-slate-900">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.08),transparent_25%),radial-gradient(circle_at_bottom_right,rgba(99,102,241,0.06),transparent_25%)]" />
+      <div className="relative max-w-5xl mx-auto">
 
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-12 lg:mb-16">
           <img
             src={logo}
             alt="P2SA Logo"
-            className="h-20 mx-auto mb-4 object-contain"
+            className="h-16 mx-auto mb-6 object-contain"
           />
 
-          <h1 className="text-3xl font-black text-slate-900">
-            P2SA Election Portal
-          </h1>
-
-          <p className="text-slate-500 mt-2">
-            AGM Election 2026
-          </p>
+          <div className="space-y-3">
+            <h1 className="text-5xl lg:text-6xl font-black text-slate-900 tracking-tight">
+              Voting Portal
+            </h1>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+              AGM Election 2026 • Your secure vote matters
+            </p>
+          </div>
         </div>
 
         {/* User Information */}
-        <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 space-y-5">
+        <div className="glass-panel rounded-3xl p-10 lg:p-12 space-y-8 border-slate-200/50">
 
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center">
-              <User size={22} />
+          <div className="flex items-start gap-5">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-100 to-blue-50 border border-blue-200 flex items-center justify-center shrink-0">
+              <User size={28} className="text-blue-600" />
             </div>
-
-            <div>
-              <p className="text-xs uppercase tracking-wider text-slate-400 font-bold">
-                Member Name
+            <div className="flex-1">
+              <p className="text-xs uppercase tracking-wider text-slate-500 font-bold mb-1">
+                Registered Voter
               </p>
-
               <p className="font-bold text-slate-900 text-lg">
                 {userData?.fullName || 'N/A'}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-4 border-t pt-4">
-            <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center">
-              <Building2 size={22} />
+          <div className="h-px bg-gradient-to-r from-slate-300/20 via-slate-300/40 to-slate-300/20"></div>
+
+          <div className="flex items-start gap-5">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-100 to-indigo-50 border border-indigo-200 flex items-center justify-center shrink-0">
+              <Building2 size={28} className="text-indigo-600" />
             </div>
-
-            <div>
-              <p className="text-xs uppercase tracking-wider text-slate-400 font-bold">
-                Company
+            <div className="flex-1">
+              <p className="text-xs uppercase tracking-wider text-slate-500 font-bold mb-1">
+                Organization
               </p>
-
-              <p className="font-medium text-slate-700">
+              <p className="font-medium text-slate-700 text-lg">
                 {userData?.company || 'N/A'}
               </p>
             </div>
@@ -146,56 +146,58 @@ const UserDashboard = () => {
 
           {/* Voting Status */}
           <div
-            className={`rounded-xl p-4 flex items-center gap-3 font-bold ${
+            className={`rounded-2xl p-5 flex items-center gap-4 font-bold transition-all ${
               userData?.hasVoted
-                ? 'bg-green-50 text-green-700 border border-green-200'
-                : 'bg-amber-50 text-amber-700 border border-amber-200'
+                ? 'bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 border border-green-300'
+                : 'bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 border border-amber-300'
             }`}
           >
-            {userData?.hasVoted ? (
-              <>
-                <CheckCircle2 size={20} />
-                <span>
-                  Vote Submitted Successfully
-                </span>
-              </>
-            ) : (
-              <>
-                <AlertCircle size={20} />
-                <span>
-                  You Have Not Voted Yet
-                </span>
-              </>
-            )}
+            <div className={`p-2 rounded-full ${userData?.hasVoted ? 'bg-green-200/30' : 'bg-amber-200/30'}`}>
+              {userData?.hasVoted ? (
+                <CheckCircle2 size={24} />
+              ) : (
+                <AlertCircle size={24} />
+              )}
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-bold">
+                {userData?.hasVoted ? 'Vote Submitted' : 'Vote Not Yet Cast'}
+              </p>
+              <p className="text-xs font-medium opacity-85">
+                {userData?.hasVoted 
+                  ? 'Your selections have been securely recorded' 
+                  : 'Begin the voting process when ready'}
+              </p>
+            </div>
           </div>
 
         </div>
 
         {/* Vote Button */}
-        <div className="mt-8">
+        <div className="mt-12 grid gap-4 sm:grid-cols-2 max-w-3xl">
           <button
             onClick={() => navigate('/vote')}
             disabled={userData?.hasVoted}
-            className={`w-full py-6 rounded-3xl font-bold text-lg transition-all ${
+            className={`relative overflow-hidden rounded-2xl px-8 py-5 text-lg font-bold transition-all group ${
               userData?.hasVoted
-                ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
-                : 'bg-blue-600 hover:bg-blue-700 text-white'
+                ? 'bg-slate-300 text-slate-600 cursor-not-allowed'
+                : 'bg-gradient-to-br from-blue-600 via-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-600/40 hover:shadow-xl hover:-translate-y-1'
             }`}
           >
-            {userData?.hasVoted
-              ? 'Voting Completed'
-              : 'Vote Now'}
+            <div className="absolute inset-0 bg-gradient-to-t from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div className="relative flex items-center justify-center gap-2">
+              {userData?.hasVoted
+                ? 'Voting Completed'
+                : '→ Begin Voting'}
+            </div>
           </button>
-        </div>
 
-        {/* Logout */}
-        <div className="mt-4">
           <button
             onClick={handleLogout}
-            className="w-full py-4 rounded-2xl border border-red-200 text-red-600 font-bold hover:bg-red-50 flex items-center justify-center gap-2"
+            className="rounded-2xl border-2 border-slate-300 bg-white text-slate-700 font-bold transition-all hover:bg-slate-50 hover:border-slate-400 px-8 py-5 text-lg flex items-center justify-center gap-2 group"
           >
-            <LogOut size={18} />
-            Logout
+            <LogOut size={20} className="group-hover:-translate-x-1 transition-transform" />
+            <span>Logout</span>
           </button>
         </div>
 

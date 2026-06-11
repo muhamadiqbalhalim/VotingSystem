@@ -1,16 +1,56 @@
-# React + Vite
+# P2SA Voting Platform
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is a React + Vite voting platform backed by Firebase Authentication and Firestore.
 
-Currently, two official plugins are available:
+## Project overview
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React 19, Vite, Tailwind CSS
+- Firebase Authentication for user login and registration
+- Firestore collections for voter profiles, candidates, and election settings
+- Admin dashboard for managing voting stages, candidates, and results
+- Client-side route protection for regular users and administrators
 
-## React Compiler
+## Local development setup
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. Install dependencies:
 
-## Expanding the ESLint configuration
+```bash
+npm install
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+2. Create a local Firebase config file:
+
+```bash
+cp .env.example .env.local
+```
+
+3. Fill in the Firebase values inside `.env.local`:
+
+```text
+VITE_FIREBASE_API_KEY=your_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
+VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+VITE_FIREBASE_APP_ID=your_app_id
+```
+
+4. Start development server:
+
+```bash
+npm run dev
+```
+
+## Production notes
+
+- Do not commit `.env.local` or actual Firebase secrets to source control.
+- The app expects Firebase variables prefixed with `VITE_`.
+- If any required Firebase config is missing, startup will fail with a clear message.
+
+## Recommended improvements for commercial readiness
+
+- Add an `AuthContext` provider to centralize auth state and user profile data.
+- Introduce explicit `organizationId` and `electionId` fields to support multiple organizations and elections.
+- Replace browser `localStorage` storage of role/profile data with in-memory auth session data.
+- Add payment / subscription metadata for SaaS licensing if needed.
+- Harden Firestore rules and add a Cloud Function for vote submission and audit logging.

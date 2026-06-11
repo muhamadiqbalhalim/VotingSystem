@@ -1,0 +1,73 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function userDoc() {
+      return get(/databases/$(database)/documents/voting/$(request.auth.uid));
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && userDoc().data.role == 'admin';
+    }
+
+    function isSelf(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    match /voting/{userId} {
+      allow create: if isSelf(userId)
+        && request.resource.data.role == 'voter'
+        && request.resource.data.hasVoted == false
+        && request.resource.data.votedCategories.size() == 0;
+
+      allow read: if isSelf(userId) || isAdmin();
+
+      allow update: if isAdmin();
+
+      allow update: if isSelf(userId)
+        && resource.data.role == request.resource.data.role
+        && request.resource.data.role == 'voter'
+        && request.resource.data.uid == resource.data.uid
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'votes',
+          'voteDetails',
+          'votedCategories',
+          'lastVotedAt',
+          'hasVoted',
+          'completedAt'
+        ])
+        && request.resource.data.votedCategories.size() >= resource.data.votedCategories.size();
+
+      // Production recommendation:
+      // Voter vote writes should go through a callable Cloud Function using
+      // Admin SDK transactions. Client-side rules cannot fully validate dynamic
+      // candidate/category/timing constraints for high-stakes elections.
+      allow delete: if false;
+    }
+
+    match /candidates/{candidateId} {
+      allow read: if signedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /settings/{settingId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    match /auditLogs/{logId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,19 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { db } from '../firebase/config';
 import {
   collection,
   addDoc,
-  deleteDoc,
   doc,
   onSnapshot,
   query,
-  orderBy
+  orderBy,
+  serverTimestamp,
+  updateDoc
 } from 'firebase/firestore';
 
 import {
   PlusCircle,
   Trash2
 } from 'lucide-react';
+import { CATEGORY_LIST } from '../lib/electionConfig';
 
 const Candidates = () => {
   const [candidates, setCandidates] = useState([]);
@@ -61,7 +63,9 @@ const Candidates = () => {
         collection(db, 'candidates'),
         {
           name: name.trim(),
-          category
+          category,
+          active: true,
+          createdAt: serverTimestamp()
         }
       );
 
@@ -80,9 +84,10 @@ const Candidates = () => {
     if (!confirmed) return;
 
     try {
-      await deleteDoc(
-        doc(db, 'candidates', id)
-      );
+      await updateDoc(doc(db, 'candidates', id), {
+        active: false,
+        archivedAt: serverTimestamp()
+      });
     } catch (error) {
       console.error(error);
       alert('Failed to delete candidate.');
@@ -90,19 +95,19 @@ const Candidates = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-8">
+    <div className="max-w-5xl mx-auto p-6 space-y-8 text-slate-900">
 
       <div>
         <h1 className="text-3xl font-black text-slate-900">
           Candidate Management
         </h1>
 
-        <p className="text-slate-500 mt-1">
+        <p className="text-slate-600 mt-1">
           Add and manage election candidates.
         </p>
       </div>
 
-      <div className="bg-white rounded-3xl border border-slate-200 p-6">
+      <div className="glass-panel-soft rounded-[2rem] border-slate-200 p-6">
 
         <form
           onSubmit={handleSubmit}
@@ -116,7 +121,7 @@ const Candidates = () => {
             onChange={(e) =>
               setName(e.target.value)
             }
-            className="flex-1 px-4 py-3 border rounded-xl"
+            className="flex-1 px-4 py-3 border border-slate-300 rounded-xl bg-white text-slate-900 placeholder:text-slate-500"
             required
           />
 
@@ -125,31 +130,13 @@ const Candidates = () => {
             onChange={(e) =>
               setCategory(e.target.value)
             }
-            className="px-4 py-3 border rounded-xl bg-white"
+            className="px-4 py-3 border border-slate-300 rounded-xl bg-white text-slate-900"
           >
-            <option value="president">
-              President
-            </option>
-
-            <option value="deputy">
-              Deputy President
-            </option>
-
-            <option value="vice">
-              Vice President
-            </option>
-
-            <option value="secretary">
-              Secretary
-            </option>
-
-            <option value="treasurer">
-              Treasurer
-            </option>
-
-            <option value="exco">
-              Exco
-            </option>
+            {CATEGORY_LIST.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.title}
+              </option>
+            ))}
           </select>
 
           <button
@@ -177,27 +164,27 @@ const Candidates = () => {
         </div>
 
         {loading ? (
-          <div className="bg-white rounded-3xl border p-10 text-center">
+          <div className="glass-panel-soft rounded-3xl border-slate-200 p-10 text-center text-slate-600">
             Loading...
           </div>
         ) : candidates.length === 0 ? (
-          <div className="bg-white rounded-3xl border p-10 text-center text-slate-500">
+          <div className="glass-panel-soft rounded-3xl border-slate-200 p-10 text-center text-slate-500">
             No candidates found.
           </div>
         ) : (
           <div className="space-y-3">
 
-            {candidates.map((candidate) => (
+            {candidates.filter((candidate) => candidate.active !== false).map((candidate) => (
               <div
                 key={candidate.id}
-                className="bg-white border rounded-2xl p-5 flex justify-between items-center"
+                className="glass-panel-soft border-slate-200 rounded-2xl p-5 flex justify-between items-center"
               >
                 <div>
                   <h3 className="font-bold text-lg text-slate-900">
                     {candidate.name}
                   </h3>
 
-                  <p className="text-sm text-slate-500 capitalize">
+                  <p className="text-sm text-slate-600 capitalize">
                     {candidate.category}
                   </p>
                 </div>
@@ -206,7 +193,7 @@ const Candidates = () => {
                   onClick={() =>
                     handleDelete(candidate.id)
                   }
-                  className="text-red-600 hover:bg-red-50 p-2 rounded-xl"
+                  className="text-red-600 hover:bg-red-100 p-2 rounded-xl transition"
                 >
                   <Trash2 size={18} />
                 </button>

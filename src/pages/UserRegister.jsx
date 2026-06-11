@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import {
@@ -17,11 +17,9 @@ import {
 } from 'lucide-react';
 
 import { auth, db } from '../firebase/config';
-
 import {
   createUserWithEmailAndPassword
 } from 'firebase/auth';
-
 import {
   doc,
   setDoc
@@ -29,430 +27,216 @@ import {
 
 const UserRegister = () => {
   const [email, setEmail] = useState('');
-  const [password, setPassword] =
-    useState('');
-
-  const [fullName, setFullName] =
-    useState('');
-
-  const [company, setCompany] =
-    useState('');
-
-  const [error, setError] =
-    useState('');
-
-  const [loading, setLoading] =
-    useState(false);
-
-  const [showPassword,
-    setShowPassword] =
-    useState(false);
+  const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [company, setCompany] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
 
-  const handleRegister = async (
-    e
-  ) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-
     setError('');
     setLoading(true);
 
     try {
-      const userCredential =
-        await createUserWithEmailAndPassword(
-          auth,
-          email.trim(),
-          password
-        );
-
-      const user =
-        userCredential.user;
-
-      await setDoc(
-        doc(
-          db,
-          'voting',
-          user.uid
-        ),
-        {
-          uid: user.uid,
-
-          fullName,
-
-          email,
-
-          company,
-
-          role: 'voter',
-
-          hasVoted: false,
-
-          votedCategories: [],
-
-          createdAt:
-            new Date().toISOString()
-        }
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email.trim(),
+        password
       );
 
-      alert(
-        'Account registered successfully.'
-      );
+      const user = userCredential.user;
 
+      await setDoc(doc(db, 'voting', user.uid), {
+        uid: user.uid,
+        fullName,
+        email,
+        company,
+        role: 'voter',
+        hasVoted: false,
+        votedCategories: [],
+        createdAt: new Date().toISOString()
+      });
+
+      alert('Account registered successfully.');
       navigate('/login');
-
     } catch (err) {
-
       console.error(err);
-
-      if (
-        err.code ===
-        'auth/email-already-in-use'
-      ) {
-        setError(
-          'This email address is already registered.'
-        );
+      if (err.code === 'auth/email-already-in-use') {
+        setError('This email address is already registered.');
+      } else if (err.code === 'auth/weak-password') {
+        setError('Password must be at least 6 characters.');
+      } else {
+        setError(err.message);
       }
-      else if (
-        err.code ===
-        'auth/weak-password'
-      ) {
-        setError(
-          'Password must be at least 6 characters.'
-        );
-      }
-      else {
-        setError(
-          err.message
-        );
-      }
-
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-slate-50 text-slate-800">
+    <div className="min-h-screen relative bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 text-slate-900 overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.08),transparent_25%),radial-gradient(circle_at_bottom_right,rgba(99,102,241,0.06),transparent_25%)]" />
+      <div className="relative mx-auto flex min-h-screen w-full max-w-screen-2xl flex-col md:flex-row">
+        <aside className="w-full md:w-[43%] flex flex-col justify-between border-b md:border-b-0 md:border-r border-slate-200 bg-white/70 px-8 py-10 backdrop-blur-md">
+          <div className="space-y-10">
+            <div className="inline-flex items-center gap-4 rounded-full border border-slate-200 bg-white/80 px-4 py-3 shadow-sm">
+              <div className="grid h-12 w-12 place-items-center rounded-3xl bg-gradient-to-tr from-blue-600 to-blue-500 shadow-lg">
+                <Shield size={20} className="text-white" />
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-blue-600 font-semibold">P2SA Election Portal</p>
+              </div>
+            </div>
 
-      {/* LEFT PANEL */}
+            <div className="space-y-4">
+              <div className="inline-flex items-center gap-2 rounded-full bg-blue-50/80 px-4 py-2 text-xs font-bold uppercase tracking-[0.24em] text-blue-600 border border-blue-200">
+                <Globe size={14} />
+                Official Registration
+              </div>
+              <h1 className="text-4xl sm:text-5xl font-black leading-tight text-slate-900">Create Your Voter Account</h1>
+              <p className="text-base text-slate-700 leading-relaxed">Register quickly and securely to participate in the AGM election with trusted ballot control.</p>
+            </div>
 
-      <div className="w-full md:w-[45%] border-b md:border-b-0 md:border-r border-slate-200 bg-gradient-to-br from-blue-50 to-slate-50 p-8 lg:p-12 flex flex-col justify-between">
-
-        <div className="flex items-center gap-3">
-
-          <div className="w-10 h-10 bg-gradient-to-tr from-blue-600 to-indigo-500 rounded-xl flex items-center justify-center shadow-md">
-
-            <Shield
-              className="text-white"
-              size={20}
-            />
-
+            <div className="rounded-[2rem] border border-slate-200 bg-white/60 p-6 shadow-sm">
+              <p className="text-sm text-slate-700">Secure registration, encrypted identity management, and audit-ready voter profiles.</p>
+            </div>
           </div>
 
-          <span className="font-black text-base tracking-tight uppercase text-slate-900">
-
-            P2SA Election Portal
-
-          </span>
-
-        </div>
-
-        <div className="my-12 md:my-0 space-y-6 max-w-md">
-
-          <div className="inline-flex items-center gap-2 px-3 py-1 border rounded-full text-xs font-bold tracking-wide bg-blue-50 border-blue-200 text-blue-700">
-
-            <Globe size={12} />
-
-            Official Registration Portal
-
+          <div className="space-y-2 text-sm text-slate-600">
+            <p>Already registered? Sign in to the voting portal.</p>
+            <p className="uppercase tracking-[0.24em] text-slate-500 font-semibold">Powered by P2SA</p>
           </div>
+        </aside>
 
-          <h2 className="text-3xl lg:text-4xl font-black tracking-tight leading-tight text-slate-900">
-
-            Create Your Voter Account
-
-          </h2>
-
-          <p className="text-base leading-relaxed text-slate-600 font-medium">
-
-            Register your account to participate in the election process and access the voting platform.
-
-          </p>
-
-        </div>
-
-        <div className="text-xs text-slate-400 font-bold">
-
-          &copy; {new Date().getFullYear()} P2SA
-
-        </div>
-
-      </div>
-
-      {/* RIGHT PANEL */}
-
-      <div className="flex-1 flex items-center justify-center bg-white p-6 md:p-12 lg:p-16">
-
-        <div className="w-full max-w-[420px]">
-
-          <div className="mb-8">
-
-            <h3 className="text-2xl font-black text-slate-900">
-
-              User Registration
-
-            </h3>
-
-            <p className="text-base mt-2 font-medium text-slate-500">
-
-              Fill in your details below.
-
-            </p>
-
-          </div>
-
-          <form
-            onSubmit={handleRegister}
-            className="space-y-5"
-          >
-
-            {/* FULL NAME */}
-
-            <div>
-
-              <label className="block text-sm font-bold mb-2 text-slate-700">
-
-                Full Name
-
-              </label>
-
-              <div className="relative">
-
-                <User
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                  size={18}
-                />
-
-                <input
-                  type="text"
-                  value={fullName}
-                  onChange={(e) =>
-                    setFullName(
-                      e.target.value
-                    )
-                  }
-                  required
-                  placeholder="Enter your full name"
-                  className="w-full pl-12 pr-4 py-3.5 border border-slate-200 rounded-xl font-medium bg-slate-50 focus:bg-white focus:ring-4 focus:ring-blue-100 focus:border-blue-500 focus:outline-none transition-all"
-                />
-
-              </div>
-
+        <main className="flex-1 flex items-center justify-center p-6 md:p-12 lg:p-16">
+          <div className="glass-panel w-full max-w-[520px] p-8 sm:p-10 rounded-[2rem]">
+            <div className="mb-8">
+              <h3 className="text-3xl font-black text-slate-900">User Registration</h3>
+              <p className="text-sm text-slate-600 mt-2">Create your secure voter account and join the election process.</p>
             </div>
 
-            {/* COMPANY */}
-
-            <div>
-
-              <label className="block text-sm font-bold mb-2 text-slate-700">
-
-                Company / Organization
-
-              </label>
-
-              <div className="relative">
-
-                <Building2
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                  size={18}
-                />
-
-                <input
-                  type="text"
-                  value={company}
-                  onChange={(e) =>
-                    setCompany(
-                      e.target.value
-                    )
-                  }
-                  required
-                  placeholder="Enter company name"
-                  className="w-full pl-12 pr-4 py-3.5 border border-slate-200 rounded-xl font-medium bg-slate-50 focus:bg-white focus:ring-4 focus:ring-blue-100 focus:border-blue-500 focus:outline-none transition-all"
-                />
-
-              </div>
-
-            </div>
-
-            {/* EMAIL */}
-
-            <div>
-
-              <label className="block text-sm font-bold mb-2 text-slate-700">
-
-                Email Address
-
-              </label>
-
-              <div className="relative">
-
-                <Mail
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                  size={18}
-                />
-
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) =>
-                    setEmail(
-                      e.target.value
-                    )
-                  }
-                  required
-                  placeholder="Enter your email"
-                  className="w-full pl-12 pr-4 py-3.5 border border-slate-200 rounded-xl font-medium bg-slate-50 focus:bg-white focus:ring-4 focus:ring-blue-100 focus:border-blue-500 focus:outline-none transition-all"
-                />
-
-              </div>
-
-            </div>
-
-            {/* PASSWORD */}
-
-            <div>
-
-              <label className="block text-sm font-bold mb-2 text-slate-700">
-
-                Password
-
-              </label>
-
-              <div className="relative">
-
-                <Lock
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                  size={18}
-                />
-
-                <input
-                  type={
-                    showPassword
-                      ? 'text'
-                      : 'password'
-                  }
-                  value={password}
-                  onChange={(e) =>
-                    setPassword(
-                      e.target.value
-                    )
-                  }
-                  required
-                  placeholder="Minimum 6 characters"
-                  className="w-full pl-12 pr-12 py-3.5 border border-slate-200 rounded-xl font-medium bg-slate-50 focus:bg-white focus:ring-4 focus:ring-blue-100 focus:border-blue-500 focus:outline-none transition-all"
-                />
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setShowPassword(
-                      !showPassword
-                    )
-                  }
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"
-                >
-                  {showPassword
-                    ? <EyeOff size={16} />
-                    : <Eye size={16} />}
-                </button>
-
-              </div>
-
-            </div>
-
-            {error && (
-
-              <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
-
-                <AlertCircle
-                  size={16}
-                  className="shrink-0 mt-0.5"
-                />
-
-                <span>
-                  {error}
-                </span>
-
-              </div>
-
-            )}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 rounded-xl font-bold text-base shadow-lg disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-
-              {loading ? (
-                <>
-                  <Loader2
-                    className="animate-spin"
-                    size={20}
+            <form onSubmit={handleRegister} className="space-y-5">
+              <div>
+                <label htmlFor="register-fullname" className="block text-sm font-bold mb-2 text-slate-800">Full Name</label>
+                <div className="relative">
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <input
+                    id="register-fullname"
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    required
+                    placeholder="Enter your full name"
+                    className="w-full rounded-3xl border border-slate-300 bg-slate-50/60 px-12 py-4 text-slate-900 outline-none ring-1 ring-transparent transition-all duration-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 placeholder:text-slate-500"
                   />
-                  <span>
-                    Registering...
-                  </span>
-                </>
-              ) : (
-                <>
-                  <span>
-                    Create Account
-                  </span>
-                  <ArrowRight
-                    size={18}
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="register-company" className="block text-sm font-bold mb-2 text-slate-800">Company / Organization</label>
+                <div className="relative">
+                  <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <input
+                    id="register-company"
+                    type="text"
+                    value={company}
+                    onChange={(e) => setCompany(e.target.value)}
+                    required
+                    placeholder="Enter company name"
+                    className="w-full rounded-3xl border border-slate-300 bg-slate-50/60 px-12 py-4 text-slate-900 outline-none ring-1 ring-transparent transition-all duration-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 placeholder:text-slate-500"
                   />
-                </>
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="register-email" className="block text-sm font-bold mb-2 text-slate-800">Email Address</label>
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <input
+                    id="register-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    placeholder="Enter your email"
+                    className="w-full rounded-3xl border border-slate-300 bg-slate-50/60 px-12 py-4 text-slate-900 outline-none ring-1 ring-transparent transition-all duration-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 placeholder:text-slate-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="register-password" className="block text-sm font-bold mb-2 text-slate-800">Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <input
+                    id="register-password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    placeholder="Minimum 6 characters"
+                    className="w-full rounded-3xl border border-slate-300 bg-slate-50/60 px-12 py-4 text-slate-900 outline-none ring-1 ring-transparent transition-all duration-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 placeholder:text-slate-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+
+              {error && (
+                <div className="flex items-start gap-3 rounded-3xl border border-red-300 bg-red-50/80 p-4 text-sm text-red-700">
+                  <AlertCircle size={16} className="shrink-0 mt-0.5 text-red-600" />
+                  <span>{error}</span>
+                </div>
               )}
 
-            </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full rounded-3xl bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 text-base font-bold text-white shadow-lg shadow-blue-600/25 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60 flex items-center justify-center gap-2"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="animate-spin" size={20} />
+                    <span>Registering...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Create Account</span>
+                    <ArrowRight size={18} />
+                  </>
+                )}
+              </button>
+            </form>
 
-          </form>
-          
-          <div className="mt-6 text-center">
-
-            <p className="text-sm text-slate-500">
-
+            <div className="mt-6 text-center">
+              <p className="text-sm text-slate-700">
                 Already have an account?
-
                 <button
-                type="button"
-                onClick={() => navigate('/login')}
-                className="ml-2 font-bold text-blue-600 hover:text-blue-700"
+                  type="button"
+                  onClick={() => navigate('/login')}
+                  className="ml-2 font-semibold text-blue-600 hover:text-blue-700"
                 >
-                Login Here
+                  Login Here
                 </button>
-
-            </p>
-
+              </p>
             </div>
 
-          <div className="mt-10 flex items-center justify-center gap-2 text-slate-400">
-
-            <HelpCircle size={14} />
-
-            <span className="text-[10px] uppercase font-black tracking-widest">
-
-              Secure Registration Portal
-
-            </span>
-
+            <div className="mt-10 flex items-center justify-center gap-2 text-slate-500">
+              <HelpCircle size={14} />
+              <span className="text-[10px] uppercase font-black tracking-widest">Secure Registration Portal</span>
+            </div>
           </div>
-
-        </div>
-
+        </main>
       </div>
-
     </div>
   );
 };
