@@ -83,24 +83,27 @@ const UserRegister = () => {
 
       <div className="relative mx-auto flex min-h-screen w-full max-w-7xl flex-col lg:flex-row">
         {/* Sidebar KSNSSB */}
-        <aside
-          className="
-    hidden
-    md:flex
+<aside
+  className="
+    flex
+    w-full
     lg:w-1/2
     flex-col
     justify-center
-    px-12
-    py-16
+    px-6
+    sm:px-8
+    lg:px-12
+    py-10
+    lg:py-16
     bg-gradient-to-br
     from-white/80
     via-blue-50/50
     to-white/70
     backdrop-blur-xl
-    border-r
+    lg:border-r
     border-slate-200
-  "
-        >
+"
+>
           <div className="space-y-10">
             <div className="inline-flex items-center gap-3 rounded-full border border-blue-200/50 bg-white/80 px-4 py-2.5 shadow-sm w-fit">
               <img
@@ -121,11 +124,12 @@ const UserRegister = () => {
                 >
                   Sistem Pengundian Kesatuan
                 </p>
-                <h1>
-                  data-translate="registerSidebarTitle" className="text-3xl
-                  sm:text-4xl lg:text-5xl font-black leading-tight
-                  text-slate-900"
-                </h1>{" "}
+<h1
+  data-translate="registerSidebarTitle"
+  className="text-3xl sm:text-4xl lg:text-5xl font-black leading-tight text-slate-900"
+>
+  Pendaftaran Ahli KSNSSB
+</h1>
               </div>
               <p
                 data-translate="registerSidebarDesc"
