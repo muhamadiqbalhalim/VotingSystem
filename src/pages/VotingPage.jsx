@@ -9,8 +9,7 @@ import {
   doc,
   onSnapshot,
   runTransaction,
-  serverTimestamp,
-  updateDoc
+  serverTimestamp
 } from "firebase/firestore";
 import { CATEGORIES, CATEGORY_IDS, LOCKED_CATEGORY, isValidCategory } from '../lib/electionConfig';
 import { initializeWithDetection } from '../languageTranslator.js';
@@ -91,31 +90,46 @@ const VotingPage = () => {
 
   const confirmSubmitVote = async () => {
     setLoading(true);
+    setError('');
     try {
       const user = auth.currentUser;
+      const userRef = doc(db, "users", user.uid);
+      const settingsRef = doc(db, "settings", "election");
+
       await runTransaction(db, async (transaction) => {
-        const userRef = doc(db, "users", user.uid);
-        const settingsSnap = await transaction.get(doc(db, "settings", "election"));
+        const userSnap = await transaction.get(userRef);
+        const settingsSnap = await transaction.get(settingsRef);
         
-        if (settingsSnap.data().activeCategory !== activeCategory) throw new Error('PHASE_CHANGED');
+        if (!settingsSnap.exists() || settingsSnap.data().activeCategory !== activeCategory) {
+          throw new Error('PHASE_CHANGED');
+        }
+
+        const currentVoted = userSnap.data().votedCategories || [];
+        const updatedVoted = Array.from(new Set([...currentVoted, activeCategory]));
+        const isLastVote = updatedVoted.length >= CATEGORY_IDS.length;
 
         transaction.update(userRef, {
           [`votes.${activeCategory}`]: selections,
-          votedCategories: arrayUnion(activeCategory),
-          hasVoted: (votedCategories.length + 1) >= CATEGORY_IDS.length,
+          [`voteDetails.${activeCategory}`]: {
+             candidateIds: selections,
+             submittedAt: serverTimestamp()
+          },
+          votedCategories: updatedVoted,
+          hasVoted: isLastVote,
           lastVotedAt: serverTimestamp()
         });
       });
+      
       setSelections([]);
       setShowReview(false);
     } catch (err) {
-      setError('Transmission Error.');
+      console.error("Voting Error:", err);
+      setError(err.message === 'PHASE_CHANGED' ? 'Fasa undian telah bertukar.' : 'Ralat penghantaran undi.');
     } finally {
       setLoading(false);
     }
   };
 
-  // UI Components
   if (hasCompletedAll) return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
       <div className="max-w-sm w-full bg-white p-8 rounded-3xl shadow-xl text-center">
@@ -154,7 +168,14 @@ const VotingPage = () => {
           ))}
         </div>
 
-        <button onClick={() => selections.length > 0 && setShowReview(true)} className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold text-sm" data-translate="submitBallot">Submit</button>
+        <button 
+          onClick={() => selections.length > 0 && setShowReview(true)} 
+          disabled={loading}
+          className={`w-full py-4 bg-blue-600 text-white rounded-2xl font-bold text-sm ${loading ? 'opacity-50' : ''}`} 
+          data-translate="submitBallot"
+        >
+          {loading ? 'Submitting...' : 'Submit'}
+        </button>
       </div>
 
       {showReview && (
@@ -164,7 +185,7 @@ const VotingPage = () => {
             {selectedCandidates.map(c => <div key={c.id} className="text-sm font-bold mb-2">{c.name}</div>)}
             <div className="flex gap-2 mt-6">
               <button onClick={() => setShowReview(false)} className="flex-1 py-3 border rounded-xl font-bold text-sm" data-translate="back">Back</button>
-              <button onClick={confirmSubmitVote} className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold text-sm" data-translate="confirm">Confirm</button>
+              <button onClick={confirmSubmitVote} disabled={loading} className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold text-sm" data-translate="confirm">Confirm</button>
             </div>
           </div>
         </div>
