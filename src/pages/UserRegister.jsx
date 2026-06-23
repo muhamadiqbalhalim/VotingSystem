@@ -7,11 +7,8 @@ import {
   Building2,
   Loader2,
   ArrowRight,
-  AlertCircle,
   Eye,
   EyeOff,
-  Globe,
-  Shield,
 } from "lucide-react";
 
 import logo from "../assets/logo.png";
@@ -52,7 +49,7 @@ const UserRegister = () => {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email.trim(),
-        password,
+        password
       );
       await setDoc(doc(db, "users", userCredential.user.uid), {
         uid: userCredential.user.uid,
@@ -78,354 +75,125 @@ const UserRegister = () => {
   };
 
   return (
-    <div className="min-h-screen relative bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 text-slate-900 overflow-x-hidden">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.08),transparent_25%)]" />
-
-      <div className="relative mx-auto flex min-h-screen w-full max-w-7xl flex-col lg:flex-row">
-        {/* Sidebar KSNSSB */}
-<aside
-  className="
-    flex
-    w-full
-    lg:w-1/2
-    flex-col
-    justify-center
-    px-6
-    sm:px-8
-    lg:px-12
-    py-10
-    lg:py-16
-    bg-gradient-to-br
-    from-white/80
-    via-blue-50/50
-    to-white/70
-    backdrop-blur-xl
-    lg:border-r
-    border-slate-200
-"
->
-          <div className="space-y-10">
-            <div className="inline-flex items-center gap-3 rounded-full border border-blue-200/50 bg-white/80 px-4 py-2.5 shadow-sm w-fit">
-              <img
-                src={logo}
-                alt="KSNSSB Logo"
-                className="h-8 w-auto object-contain"
-              />
-              <span className="text-xs font-black uppercase tracking-[0.2em] text-blue-700">
-                KSNSSB
-              </span>
-            </div>
-
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <p
-                  data-translate="sidebarSubtitle"
-                  className="text-xs uppercase tracking-[0.35em] text-blue-600 font-bold"
-                >
-                  Sistem Pengundian Kesatuan
-                </p>
-<h1
-  data-translate="registerSidebarTitle"
-  className="text-3xl sm:text-4xl lg:text-5xl font-black leading-tight text-slate-900"
->
-  Pendaftaran Ahli KSNSSB
-</h1>
-              </div>
-              <p
-                data-translate="registerSidebarDesc"
-                className="text-base sm:text-lg text-slate-700 leading-relaxed max-w-md"
-              >
-                Daftar akaun anda dengan selamat untuk menyertai proses
-                pengundian Kesatuan Sekerja Namicoh Suria Sdn Bhd yang telus dan
-                berintegriti.
-              </p>
-            </div>
-
-            <div className="glass-panel rounded-2xl p-5 sm:p-6 border border-blue-200/30 bg-white/40 w-full max-w-md">
-              {" "}
-              <p
-                data-translate="securityTitle"
-                className="font-bold text-slate-900 mb-1"
-              >
-                Keselamatan Bertaraf Profesional
-              </p>
-              <p
-                data-translate="securityDesc"
-                className="text-sm text-slate-700"
-              >
-                Sistem pengundian digital yang dijamin selamat bagi melindungi
-                hak suara setiap ahli kesatuan.
-              </p>
-            </div>
-          </div>
-
-          <div className="space-y-3 text-sm mt-10">
-            <p data-translate="needAssistance" className="text-slate-700">
-              Perlukan bantuan?{" "}
-              <span className="font-semibold text-blue-600">
-                Hubungi sekretariat kesatuan
-              </span>
-            </p>
-            <p
-              data-translate="poweredBy"
-              className="uppercase tracking-[0.25em] text-slate-500 font-bold text-xs"
-            >
-              Dikuasakan oleh KSNSSB
-            </p>
-          </div>
-        </aside>
-
-        {/* Main Content */}
-        <main className="flex-1 flex items-center justify-center p-4 sm:p-6">
-          {" "}
-          <div
-            className="
-    w-full
-    max-w-md
-    p-6
-    sm:p-8
-    lg:p-10
-    rounded-3xl
-    border
-    border-slate-200/50
-    bg-white/60
-    backdrop-blur-md
-    shadow-2xl
-  "
-          >
-            <div
-              className="
-    flex
-    flex-wrap
-    justify-center
-    gap-1
-    mb-8
-    bg-slate-100
-    p-1
-    rounded-2xl
-    border
-    border-slate-200
-  "
-            >
-              {["en", "ne", "bn", "ms"].map((lang) => (
-                <button
-                  key={lang}
-                  onClick={() => handleLanguageChange(lang)}
-                  className="
-  flex-1
-  min-w-[60px]
-  px-3
-  py-2
-  rounded-xl
-  text-xs
-  font-black
-  uppercase
-  transition-all
-  hover:bg-white
-  hover:text-blue-600
-  text-slate-500
-"
-                >
-                  {lang}
-                </button>
-              ))}
-            </div>
-
-            <div className="mb-8">
-              <h3
-                data-translate="registerTitle"
-                className="text-2xl sm:text-3xl font-black text-slate-900"
-              >
-                Pendaftaran Pengguna
-              </h3>
-              <p
-                data-translate="registerSubtitle"
-                className="text-sm text-slate-600 mt-2"
-              >
-                Daftar akaun pengundi selamat anda.
-              </p>
-            </div>
-
-            <form onSubmit={handleRegister} className="space-y-4 sm:space-y-5">
-              {" "}
-              <div>
-                <label
-                  data-translate="fullNameLabel"
-                  className="block text-sm font-bold mb-2 text-slate-800"
-                >
-                  Nama Penuh
-                </label>
-                <div className="relative">
-                  <User
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    size={18}
-                  />
-                  <input
-                    type="text"
-                    data-translate-placeholder="fullNamePlaceholder"
-                    placeholder="Masukkan nama penuh anda"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    required
-                    className="
-  w-full
-  rounded-2xl
-  border
-  border-slate-300
-  bg-slate-50/80
-  px-12
-  py-3
-  sm:py-4
-  text-sm
-  sm:text-base
-"
-                  />
-                </div>
-              </div>
-              <div>
-                <label
-                  data-translate="companyLabel"
-                  className="block text-sm font-bold mb-2 text-slate-800"
-                >
-                  Syarikat / Organisasi
-                </label>
-                <div className="relative">
-                  <Building2
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    size={18}
-                  />
-                  <input
-                    type="text"
-                    data-translate-placeholder="companyPlaceholder"
-                    placeholder="Masukkan nama syarikat"
-                    value={company}
-                    onChange={(e) => setCompany(e.target.value)}
-                    required
-                    className="
-  w-full
-  rounded-2xl
-  border
-  border-slate-300
-  bg-slate-50/80
-  px-12
-  py-3
-  sm:py-4
-  text-sm
-  sm:text-base
-"
-                  />
-                </div>
-              </div>
-              <div>
-                <label
-                  data-translate="emailLabel"
-                  className="block text-sm font-bold mb-2 text-slate-800"
-                >
-                  Alamat Emel
-                </label>
-                <div className="relative">
-                  <Mail
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    size={18}
-                  />
-                  <input
-                    type="email"
-                    data-translate-placeholder="emailPlaceholder"
-                    placeholder="contoh@emel.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="
-  w-full
-  rounded-2xl
-  border
-  border-slate-300
-  bg-slate-50/80
-  px-12
-  py-3
-  sm:py-4
-  text-sm
-  sm:text-base
-"
-                  />
-                </div>
-              </div>
-              <div>
-                <label
-                  data-translate="passwordLabel"
-                  className="block text-sm font-bold mb-2 text-slate-800"
-                >
-                  Kata Laluan
-                </label>
-                <div className="relative">
-                  <Lock
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    size={18}
-                  />
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    data-translate-placeholder="passwordPlaceholder"
-                    placeholder="Sekurang-kurangnya 6 aksara"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    className="
-  w-full
-  rounded-2xl
-  border
-  border-slate-300
-  bg-slate-50/80
-  px-12
-  py-3
-  sm:py-4
-  text-sm
-  sm:text-base
-"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-              </div>
-              {error && (
-                <div className="p-4 rounded-2xl border border-red-300 bg-red-50/80 text-sm text-red-700">
-                  {error}
-                </div>
-              )}
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full rounded-2xl bg-gradient-to-br from-blue-700 to-indigo-800 px-6 py-4 text-white font-bold hover:shadow-lg transition-all flex items-center justify-center gap-2"
-              >
-                {loading ? (
-                  <Loader2 className="animate-spin" size={20} />
-                ) : (
-                  <span>Daftar Sekarang</span>
-                )}
-                {!loading && <ArrowRight size={18} />}
-              </button>
-            </form>
-
-            <div className="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t text-center text-sm">
-              <span data-translate="alreadyHaveAccount">
-                Sudah mempunyai akaun?
-              </span>
-              <button
-                type="button"
-                onClick={() => navigate("/login")}
-                className="ml-2 font-bold text-blue-700 hover:underline"
-                data-translate="loginHere"
-              >
-                Log Masuk
-              </button>
-            </div>
-          </div>
-        </main>
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col lg:flex-row overflow-hidden">
+      {/* Background decoration */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-100/50 blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-100/50 blur-[120px]" />
       </div>
+
+      {/* Sidebar - Hidden on tiny mobile, visible on desktop/tablet */}
+      <aside className="hidden lg:flex lg:w-1/2 flex-col justify-center p-12 xl:p-20 relative z-10 border-r border-slate-200/60 bg-white/30 backdrop-blur-sm">
+        <div className="space-y-8">
+          <div className="flex items-center gap-3">
+            <img src={logo} alt="Logo" className="h-10 w-auto" />
+            <span className="font-black tracking-widest text-blue-800">KSNSSB</span>
+          </div>
+          <h1 className="text-5xl font-black leading-tight text-slate-900">
+            Sistem Pengundian <br /> <span className="text-blue-600">Berintegriti</span>
+          </h1>
+          <p className="text-lg text-slate-600 max-w-sm">
+            Daftar akaun anda untuk menyertai proses pengundian yang telus dan selamat.
+          </p>
+          <div className="bg-white/50 p-6 rounded-2xl border border-slate-200">
+            <p className="font-bold text-slate-900">Keselamatan Profesional</p>
+            <p className="text-sm text-slate-600">Terjamin untuk hak suara anda.</p>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Form Section */}
+      <main className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-12 relative z-10">
+        <div className="w-full max-w-md bg-white/80 backdrop-blur-xl p-8 rounded-3xl border border-slate-200 shadow-xl">
+          {/* Language Switcher */}
+          <div className="flex justify-center gap-2 mb-8 bg-slate-100 p-1.5 rounded-2xl">
+            {["en", "ne", "bn", "ms"].map((lang) => (
+              <button
+                key={lang}
+                onClick={() => handleLanguageChange(lang)}
+                className="flex-1 py-2 text-xs font-bold uppercase rounded-xl hover:bg-white transition-all text-slate-600 hover:text-blue-600"
+              >
+                {lang}
+              </button>
+            ))}
+          </div>
+
+          <div className="mb-8">
+            <h2 className="text-2xl font-black text-slate-900">Pendaftaran</h2>
+            <p className="text-sm text-slate-500 mt-1">Sila isi maklumat akaun anda.</p>
+          </div>
+
+          <form onSubmit={handleRegister} className="space-y-4">
+            {[
+              { label: "Nama Penuh", icon: User, type: "text", value: fullName, setter: setFullName, placeholder: "Nama Penuh" },
+              { label: "Syarikat", icon: Building2, type: "text", value: company, setter: setCompany, placeholder: "Nama Syarikat" },
+              { label: "Alamat Emel", icon: Mail, type: "email", value: email, setter: setEmail, placeholder: "emel@contoh.com" },
+            ].map((field, idx) => (
+              <div key={idx}>
+                <label className="block text-xs font-bold uppercase tracking-wider mb-2 text-slate-500">
+                  {field.label}
+                </label>
+                <div className="relative">
+                  <field.icon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <input
+                    type={field.type}
+                    value={field.value}
+                    onChange={(e) => field.setter(e.target.value)}
+                    placeholder={field.placeholder}
+                    required
+                    className="w-full rounded-2xl border border-slate-200 bg-white px-12 py-3.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                  />
+                </div>
+              </div>
+            ))}
+
+            {/* Password Field */}
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider mb-2 text-slate-500">Kata Laluan</label>
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Sekurang-kurangnya 6 aksara"
+                  required
+                  autoComplete="new-password"
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-12 py-3.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </div>
+
+            {error && (
+              <div className="p-3 text-sm text-red-600 bg-red-50 rounded-xl border border-red-100">
+                {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-200"
+            >
+              {loading ? <Loader2 className="animate-spin" size={20} /> : <>Daftar Sekarang <ArrowRight size={18} /></>}
+            </button>
+          </form>
+
+          <p className="mt-8 text-center text-sm text-slate-500">
+            Sudah mempunyai akaun?{" "}
+            <button onClick={() => navigate("/login")} className="text-blue-600 font-bold hover:underline">
+              Log Masuk
+            </button>
+          </p>
+        </div>
+      </main>
     </div>
   );
 };
