@@ -7,7 +7,8 @@ service cloud.firestore {
     }
 
     function userDoc() {
-      return get(/databases/$(database)/documents/voting/$(request.auth.uid));
+      // TUKAR: 'voting' kepada 'users'
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
     }
 
     function isAdmin() {
@@ -19,7 +20,8 @@ service cloud.firestore {
       return signedIn() && request.auth.uid == userId;
     }
 
-    match /voting/{userId} {
+    // TUKAR: 'voting' kepada 'users'
+    match /users/{userId} {
       allow create: if isSelf(userId)
         && request.resource.data.role == 'voter'
         && request.resource.data.hasVoted == false
@@ -44,10 +46,6 @@ service cloud.firestore {
         ])
         && request.resource.data.votedCategories.size() >= resource.data.votedCategories.size();
 
-      // Production recommendation:
-      // Voter vote writes should go through a callable Cloud Function using
-      // Admin SDK transactions. Client-side rules cannot fully validate dynamic
-      // candidate/category/timing constraints for high-stakes elections.
       allow delete: if false;
     }
 

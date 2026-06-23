@@ -181,4 +181,36 @@
     right: 0;
     border-right-color: var(--border);
   }
+
+  /* Style untuk butang bahasa */
+.lang-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2 kolum untuk mobile */
+  gap: 10px;
+  margin-bottom: 24px;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .lang-container {
+    grid-template-columns: repeat(4, 1fr); /* 4 kolum untuk skrin besar */
+  }
+}
+
+.lang-btn {
+  background: #1a1a2e;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid #303050;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.lang-btn:hover {
+  background: #5d3fd3;
+  border-color: #5d3fd3;
+}
 }

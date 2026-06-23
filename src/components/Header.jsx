@@ -1,4 +1,4 @@
-import logo from '../assets/image_be4763.png'; // Pastikan path ini betul
+import logo from '../assets/logo.png'; // Pastikan path ini betul
 
 const Header = () => {
   return (

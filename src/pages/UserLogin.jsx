@@ -1,22 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Lock,
-  Mail,
-  LogIn,
-  AlertCircle,
-  HelpCircle,
-  Loader2,
-  Eye,
-  EyeOff
-} from 'lucide-react';
-
-import logo from '../assets/image_be4763.png';
+import { Lock, Mail, LogIn, Loader2, Eye, EyeOff } from 'lucide-react';
+import logo from '../assets/logo.png';
 import { auth, db } from '../firebase/config';
-import {
-  signInWithEmailAndPassword
-} from 'firebase/auth';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
+import { selectLanguage, initializeWithDetection } from '../languageTranslator.js';
 
 const UserLogin = () => {
   const [email, setEmail] = useState('');
@@ -24,50 +13,30 @@ const UserLogin = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-
   const navigate = useNavigate();
+
+  useEffect(() => { initializeWithDetection(); }, []);
+
+  const handleLanguageChange = (lang) => {
+    selectLanguage(lang);
+    window.location.reload(); 
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-
     try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email.trim(),
-        password
-      );
-
-      const user = userCredential.user;
-      const userDoc = await getDoc(doc(db, 'voting', user.uid));
-
+      const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
+      const userDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
       if (!userDoc.exists()) {
-        setError('User profile not found. Please contact the administrator.');
+        setError('Profil pengguna tidak dijumpai.');
         return;
       }
-
-      const userData = userDoc.data();
-
-      if (userData.role === 'admin') {
-        navigate('/admin');
-      } else {
-        navigate('/dashboard');
-      }
+      if (userDoc.data().role === 'admin') navigate('/admin');
+      else navigate('/dashboard');
     } catch (err) {
-      console.log('LOGIN ERROR:', err);
-      console.log('ERROR CODE:', err.code);
-      console.log('ERROR MESSAGE:', err.message);
-
-      if (
-        err.code === 'auth/user-not-found' ||
-        err.code === 'auth/wrong-password' ||
-        err.code === 'auth/invalid-credential'
-      ) {
-        setError('Invalid email or password.');
-      } else {
-        setError('Login failed. Please try again.');
-      }
+      setError('Emel atau kata laluan tidak sah.');
     } finally {
       setLoading(false);
     }
@@ -75,133 +44,76 @@ const UserLogin = () => {
 
   return (
     <div className="min-h-screen relative bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 text-slate-900 overflow-hidden">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.08),transparent_25%),radial-gradient(circle_at_bottom_right,rgba(99,102,241,0.06),transparent_25%)]" />
-      <div className="relative mx-auto flex min-h-screen w-full max-w-7xl flex-col lg:flex-row lg:gap-0">
-
-        <aside className="w-full lg:w-[50%] flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-slate-200 bg-gradient-to-br from-white/80 via-blue-50/50 to-white/70 px-8 lg:px-12 py-12 lg:py-16 backdrop-blur-xl">
-          <div className="space-y-12">
-            <div className="space-y-2">
-              <div className="inline-flex items-center gap-3 rounded-full border border-blue-200/50 bg-white/80 px-4 py-2.5 shadow-sm hover:shadow-md transition-shadow">
-                <img src={logo} alt="P2SA Logo" className="h-10 w-auto object-contain" />
-                <span className="text-xs font-black uppercase tracking-[0.4em] text-blue-700">P2SA</span>
-              </div>
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.08),transparent_25%)]" />
+      
+      <div className="relative mx-auto flex min-h-screen w-full max-w-7xl">
+        
+        {/* Sidebar KSNSSB */}
+        <aside className="hidden lg:flex w-[50%] flex-col justify-center px-12 py-16 bg-gradient-to-br from-white/80 via-blue-50/50 to-white/70 backdrop-blur-xl border-r border-slate-200">
+          <div className="space-y-10">
+            <div className="inline-flex items-center gap-3 rounded-full border border-blue-200/50 bg-white/80 px-4 py-2.5 shadow-sm w-fit">
+              <img src={logo} alt="KSNSSB Logo" className="h-8 w-auto" />
+              <span className="text-xs font-black uppercase tracking-[0.2em] text-blue-700">KSNSSB</span>
             </div>
 
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <p className="text-xs uppercase tracking-[0.35em] text-blue-600 font-bold">Secure Election Platform</p>
-                <h1 className="text-5xl lg:text-6xl font-black leading-tight text-slate-900">Premium Governance Voting</h1>
-              </div>
-              <p className="text-lg text-slate-700 leading-relaxed max-w-md">Access a high-trust digital ballot built for audit-ready voting, AGM governance, and member-driven elections with complete transparency.</p>
+            <div className="space-y-4">
+              <p data-translate="sidebarSubtitle" className="text-xs uppercase tracking-[0.35em] text-blue-600 font-bold">Sistem Pengundian Kesatuan</p>
+              <h1 data-translate="sidebarTitle" className="text-5xl font-black text-slate-900 leading-tight">Sistem E-Undi KSNSSB</h1>
+              <p data-translate="sidebarDescription" className="text-lg text-slate-700 leading-relaxed">Portal rasmi pengundian Kesatuan Sekerja Namicoh Suria Sdn Bhd. Akses sistem pengundian digital yang telus, selamat, dan berintegriti untuk ahli kesatuan.</p>
             </div>
 
-            <div className="glass-panel rounded-2xl p-8 border border-blue-200/30">
-              <div className="flex gap-3">
-                <div className="w-1 bg-gradient-to-b from-blue-600 to-indigo-600 rounded-full"></div>
-                <div>
-                  <p className="font-bold text-slate-900 mb-1">Enterprise-Grade Security</p>
-                  <p className="text-sm text-slate-700">Encrypted sessions, real-time ballot tracking, and complete audit trails for your peace of mind.</p>
-                </div>
-              </div>
+            <div className="glass-panel rounded-2xl p-6 border border-blue-200/30 bg-white/40">
+              <p data-translate="securityTitle" className="font-bold text-slate-900 mb-1">Keselamatan Bertaraf Profesional</p>
+              <p data-translate="securityDesc" className="text-sm text-slate-700">Sesi yang disulitkan dan jejak audit yang lengkap bagi memastikan kerahsiaan serta ketelusan setiap undian.</p>
             </div>
-          </div>
 
-          <div className="space-y-3 text-sm">
-            <p className="text-slate-700">Need assistance? <span className="font-semibold text-blue-600">Contact your administrator</span></p>
-            <p className="uppercase tracking-[0.25em] text-slate-500 font-bold text-xs">Powered by P2SA Elections</p>
+            <div className="text-sm">
+              <p data-translate="needAssistance" className="text-slate-700">Perlukan bantuan? <span className="font-semibold text-blue-600">Hubungi sekretariat kesatuan</span></p>
+              <p data-translate="poweredBy" className="uppercase tracking-[0.25em] text-slate-500 font-bold text-xs mt-1">Dikuasakan oleh KSNSSB</p>
+            </div>
           </div>
         </aside>
 
-        <main className="flex-1 flex items-center justify-center p-6 lg:p-16 xl:p-20">
-          <div className="glass-panel w-full max-w-md p-10 lg:p-12 rounded-3xl border-slate-200/50">
-            <div className="mb-10">
-              <h3 className="text-4xl font-black text-slate-900">Login</h3>
-              <p className="text-slate-700 mt-3 font-medium">Sign in to your secure voter account</p>
+        {/* Main Form */}
+        <main className="flex-1 flex items-center justify-center p-6">
+          <div className="w-full max-w-md p-10 rounded-3xl border border-slate-200/50 bg-white/60 backdrop-blur-md shadow-2xl">
+            <div className="flex justify-center gap-1 mb-8 bg-slate-100 p-1 rounded-2xl border border-slate-200">
+                {['en', 'ne', 'bn', 'ms'].map((lang) => (
+                    <button key={lang} onClick={() => handleLanguageChange(lang)} className="flex-1 px-4 py-2 rounded-xl text-xs font-black uppercase transition-all hover:bg-white hover:text-blue-600 text-slate-500">
+                        {lang}
+                    </button>
+                ))}
             </div>
 
-            <form onSubmit={handleLogin} className="space-y-6">
+            <div className="mb-8">
+              <h3 data-translate="loginTitle" className="text-4xl font-black text-slate-900">Log Masuk</h3>
+              <p data-translate="loginSubtitle" className="text-slate-700 mt-2 font-medium">Sila log masuk ke akaun pengundi anda</p>
+            </div>
+
+            <form onSubmit={handleLogin} className="space-y-5">
               <div>
-                <label htmlFor="login-email" className="block text-sm font-bold mb-3 text-slate-800">Email Address</label>
-                <div className="relative group">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors" size={20} />
-                  <input
-                    id="login-email"
-                    type="email"
-                    placeholder="your@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="w-full rounded-2xl border border-slate-300 bg-slate-50/80 px-12 py-4 text-base text-slate-900 outline-none transition-all duration-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 placeholder:text-slate-500"
-                  />
+                <label data-translate="emailLabel" className="block text-sm font-bold mb-2 text-slate-800">Alamat Emel</label>
+                <input type="email" data-translate-placeholder="emailPlaceholder" placeholder="contoh@emel.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full rounded-2xl border border-slate-300 bg-slate-50/80 px-6 py-4" />
+              </div>
+              <div>
+                <label data-translate="passwordLabel" className="block text-sm font-bold mb-2 text-slate-800">Kata Laluan</label>
+                <div className="relative">
+                    <input type={showPassword ? 'text' : 'password'} data-translate-placeholder="passwordPlaceholder" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required className="w-full rounded-2xl border border-slate-300 bg-slate-50/80 px-6 py-4" />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-4 text-slate-400">{showPassword ? <EyeOff size={20}/> : <Eye size={20}/>}</button>
                 </div>
               </div>
 
-              <div>
-                <label htmlFor="login-password" className="block text-sm font-bold mb-3 text-slate-800">Password</label>
-                <div className="relative group">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors" size={20} />
-                  <input
-                    id="login-password"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    className="w-full rounded-2xl border border-slate-300 bg-slate-50/80 px-12 py-4 text-base text-slate-900 outline-none transition-all duration-200 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 placeholder:text-slate-500"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
-                  >
-                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
-                </div>
-              </div>
+              {error && <div className="p-4 rounded-2xl border border-red-300 bg-red-50/80 text-sm text-red-700">{error}</div>}
 
-              {error && (
-                <div className="flex items-start gap-3 rounded-2xl border border-red-300/50 bg-red-50/80 p-4 text-sm text-red-700">
-                  <AlertCircle size={18} className="shrink-0 mt-0.5 text-red-600" />
-                  <span className="font-medium">{error}</span>
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full rounded-2xl bg-gradient-to-br from-blue-600 via-blue-600 to-indigo-600 px-6 py-4 text-base font-bold text-white shadow-lg shadow-blue-600/30 transition-all hover:shadow-xl hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 flex items-center justify-center gap-2"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="animate-spin" size={20} />
-                    <span>Signing In...</span>
-                  </>
-                ) : (
-                  <>
-                    <LogIn size={20} />
-                    <span>Sign In</span>
-                  </>
-                )}
+              <button type="submit" disabled={loading} className="w-full rounded-2xl bg-gradient-to-br from-blue-700 to-indigo-800 px-6 py-4 text-white font-bold hover:shadow-lg transition-all flex items-center justify-center gap-2">
+                {loading ? <Loader2 className="animate-spin" size={20} /> : <LogIn size={20} />}
+                <span data-translate="signIn">{loading ? '...' : 'Log Masuk'}</span>
               </button>
             </form>
 
-            <div className="mt-8 pt-8 border-t border-slate-200/50 text-center">
-              <p className="text-sm text-slate-700">
-                Don't have an account?
-                <button
-                  type="button"
-                  onClick={() => navigate('/register')}
-                  className="ml-1.5 font-bold text-blue-600 hover:text-blue-700 transition-colors underline-offset-2 hover:underline"
-                >
-                  Create one now
-                </button>
-              </p>
-            </div>
-
-            <div className="mt-10 flex items-center justify-center gap-2 text-slate-400">
-              <div className="h-px flex-1 bg-gradient-to-r from-transparent to-slate-300"></div>
-              <span className="text-xs uppercase font-bold tracking-wider text-slate-500">Enterprise Security</span>
-              <div className="h-px flex-1 bg-gradient-to-l from-transparent to-slate-300"></div>
+            <div className="mt-8 pt-6 border-t text-center text-sm">
+              <span data-translate="noAccount">Tiada akaun?</span>
+              <button onClick={() => navigate('/register')} className="ml-2 font-bold text-blue-700 hover:underline" data-translate="createAccount">Daftar sekarang</button>
             </div>
           </div>
         </main>
@@ -209,5 +121,4 @@ const UserLogin = () => {
     </div>
   );
 };
-
 export default UserLogin;

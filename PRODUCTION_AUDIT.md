@@ -97,7 +97,6 @@ Store candidate IDs in ballots, not only names. Snapshot candidate name/category
 - `src/components/Header.jsx`: usable but brand-specific. Next: shared app shell.
 - `src/components/CandidateCard.jsx`: empty; remove or implement.
 - `src/components/VoteProgress.jsx`: empty; remove or implement.
-- `src/mockFirebase.js`: demo-only data; move under tests/fixtures or remove before production.
 - `src/App.css`: unused Vite/template CSS; remove after confirming no references.
 - `src/index.css`: minimal Tailwind import; add global focus and typography tokens.
 - `README.md`: template content; replace with product setup and security deployment guide.

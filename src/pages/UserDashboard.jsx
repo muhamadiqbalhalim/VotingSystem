@@ -14,6 +14,9 @@ import logo from '../assets/image_be4763.png';
 import { auth, db } from '../firebase/config';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
+import { CATEGORY_IDS } from '../lib/electionConfig';
+// Import fungsi penterjemah
+import { initializeWithDetection } from '../languageTranslator.js';
 
 const UserDashboard = () => {
   const [userData, setUserData] = useState(null);
@@ -22,6 +25,9 @@ const UserDashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Memastikan bahasa kekal mengikut pilihan pengguna
+    initializeWithDetection();
+
     const unsubscribe = onAuthStateChanged(
       auth,
       async (user) => {
@@ -33,7 +39,7 @@ const UserDashboard = () => {
         try {
           const userRef = doc(
             db,
-            'voting',
+            'users',
             user.uid
           );
 
@@ -57,6 +63,8 @@ const UserDashboard = () => {
           );
         } finally {
           setLoading(false);
+          // Panggil semula selepas data dimuatkan untuk memastikan teks baru dikemaskini
+          setTimeout(initializeWithDetection, 100);
         }
       }
     );
@@ -64,13 +72,13 @@ const UserDashboard = () => {
     return () => unsubscribe();
   }, [navigate]);
 
+  const completedVoting = userData?.hasVoted || (userData?.votedCategories?.length || 0) >= CATEGORY_IDS.length;
+
   const handleLogout = async () => {
     try {
       await signOut(auth);
-
       localStorage.clear();
       sessionStorage.clear();
-
       navigate('/login');
     } catch (error) {
       console.error(error);
@@ -102,10 +110,10 @@ const UserDashboard = () => {
           />
 
           <div className="space-y-3">
-            <h1 className="text-5xl lg:text-6xl font-black text-slate-900 tracking-tight">
+            <h1 data-translate="dashboardTitle" className="text-5xl lg:text-6xl font-black text-slate-900 tracking-tight">
               Voting Portal
             </h1>
-            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+            <p data-translate="dashboardSubtitle" className="text-lg text-slate-600 max-w-2xl mx-auto">
               AGM Election 2026 • Your secure vote matters
             </p>
           </div>
@@ -119,7 +127,7 @@ const UserDashboard = () => {
               <User size={28} className="text-blue-600" />
             </div>
             <div className="flex-1">
-              <p className="text-xs uppercase tracking-wider text-slate-500 font-bold mb-1">
+              <p data-translate="voterLabel" className="text-xs uppercase tracking-wider text-slate-500 font-bold mb-1">
                 Registered Voter
               </p>
               <p className="font-bold text-slate-900 text-lg">
@@ -135,7 +143,7 @@ const UserDashboard = () => {
               <Building2 size={28} className="text-indigo-600" />
             </div>
             <div className="flex-1">
-              <p className="text-xs uppercase tracking-wider text-slate-500 font-bold mb-1">
+              <p data-translate="orgLabel" className="text-xs uppercase tracking-wider text-slate-500 font-bold mb-1">
                 Organization
               </p>
               <p className="font-medium text-slate-700 text-lg">
@@ -160,7 +168,7 @@ const UserDashboard = () => {
               )}
             </div>
             <div className="flex-1">
-              <p className="text-sm font-bold">
+              <p data-translate={userData?.hasVoted ? "voteSubmitted" : "voteNotCast"} className="text-sm font-bold">
                 {userData?.hasVoted ? 'Vote Submitted' : 'Vote Not Yet Cast'}
               </p>
               <p className="text-xs font-medium opacity-85">
@@ -177,18 +185,18 @@ const UserDashboard = () => {
         <div className="mt-12 grid gap-4 sm:grid-cols-2 max-w-3xl">
           <button
             onClick={() => navigate('/vote')}
-            disabled={userData?.hasVoted}
+            disabled={completedVoting}
             className={`relative overflow-hidden rounded-2xl px-8 py-5 text-lg font-bold transition-all group ${
-              userData?.hasVoted
+              completedVoting
                 ? 'bg-slate-300 text-slate-600 cursor-not-allowed'
                 : 'bg-gradient-to-br from-blue-600 via-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-600/40 hover:shadow-xl hover:-translate-y-1'
             }`}
           >
             <div className="absolute inset-0 bg-gradient-to-t from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
             <div className="relative flex items-center justify-center gap-2">
-              {userData?.hasVoted
-                ? 'Voting Completed'
-                : '→ Begin Voting'}
+              <span data-translate={completedVoting ? "votingDone" : "beginVoting"}>
+                {completedVoting ? 'Voting Completed' : '→ Begin Voting'}
+              </span>
             </div>
           </button>
 
@@ -197,7 +205,7 @@ const UserDashboard = () => {
             className="rounded-2xl border-2 border-slate-300 bg-white text-slate-700 font-bold transition-all hover:bg-slate-50 hover:border-slate-400 px-8 py-5 text-lg flex items-center justify-center gap-2 group"
           >
             <LogOut size={20} className="group-hover:-translate-x-1 transition-transform" />
-            <span>Logout</span>
+            <span data-translate="logout">Logout</span>
           </button>
         </div>
 

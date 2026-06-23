@@ -1,4 +1,4 @@
-# P2SA Voting Platform
+# Voting Platform
 
 This is a React + Vite voting platform backed by Firebase Authentication and Firestore.
 

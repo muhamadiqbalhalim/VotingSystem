@@ -1,24 +1,23 @@
-// Guna import pendek seperti ini (Vite akan cari dalam node_modules)
 import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-import {
-  signInWithEmailAndPassword,
-  fetchSignInMethodsForEmail
-} from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDX6YoN5PHaFrfDPOldNUlYidRJP_Dbfzg",
-  authDomain: "p2sa-voting-5d615.firebaseapp.com",
-  projectId: "p2sa-voting-5d615",
-  storageBucket: "p2sa-voting-5d615.firebasestorage.app",
-  messagingSenderId: "440813085825",
-  appId: "1:440813085825:web:0a2fb36d4fd8c6fd429980"
+  apiKey: "AIzaSyARhrT9WtXetkSSDOe9d_WcwiEYsv1g7LA",
+  authDomain: "voting-system-nssb.firebaseapp.com",
+  projectId: "voting-system-nssb",
+  storageBucket: "voting-system-nssb.firebasestorage.app",
+  messagingSenderId: "59837426364",
+  appId: "1:59837426364:web:ef4634a8a3265404f7feb9",
+  measurementId: "G-C0MV75X36S"
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 
-// Export service untuk guna dalam Ballot.jsx, Register.jsx, dll
+// Export service sahaja
 export const db = getFirestore(app);
 export const auth = getAuth(app);
+export { analytics };

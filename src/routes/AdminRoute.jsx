@@ -18,7 +18,7 @@ export default function AdminRoute({ children }) {
 
       try {
         const userDoc = await getDoc(
-          doc(db, 'voting', user.uid)
+          doc(db, 'users', user.uid)
         );
 
         if (
