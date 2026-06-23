@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
+import { getAuth, setPersistence, browserSessionPersistence } from "firebase/auth"; // Import fungsi tambahan
 
 const firebaseConfig = {
   apiKey: "AIzaSyARhrT9WtXetkSSDOe9d_WcwiEYsv1g7LA",
@@ -17,7 +17,13 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 
-// Export service sahaja
-export const db = getFirestore(app);
+// Initialize Auth dan set Persistence
 export const auth = getAuth(app);
+setPersistence(auth, browserSessionPersistence)
+  .catch((error) => {
+    console.error("Error setting persistence:", error);
+  });
+
+// Export service lain
+export const db = getFirestore(app);
 export { analytics };
