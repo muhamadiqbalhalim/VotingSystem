@@ -9,7 +9,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 
-import logo from '../assets/image_be4763.png';
+import logo from '../assets/logo.png';
 
 import { auth, db } from '../firebase/config';
 import { onAuthStateChanged, signOut } from 'firebase/auth';

@@ -54,26 +54,29 @@ const VotingPage = () => {
       setActiveCategory(docSnap.exists() ? docSnap.data().activeCategory : LOCKED_CATEGORY);
     });
 
-    const unsubCandidates = onSnapshot(collection(db, "candidates"), (snapshot) => {
-      const grouped = { president: [], deputy: [], vice: [], secretary: [], assistant_secretary: [], treasurer: [], assistant_treasurer: [], exco: [] };
-      snapshot.forEach((d) => {
-        const data = d.data();
-        const groupKey = data?.category?.toString().startsWith('exco') ? 'exco' : data.category;
-        if (grouped[groupKey] && data.active !== false) grouped[groupKey].push({ id: d.id, ...data });
-      });
-      Object.keys(grouped).forEach((key) => grouped[key].sort((a, b) => a.name.localeCompare(b.name)));
-      setLiveCandidates(grouped);
-    });
+const unsubCandidates = onSnapshot(collection(db, "candidates"), (snapshot) => {
+  const grouped = {}; // Guna objek kosong untuk menyimpan kategori spesifik
+  snapshot.forEach((d) => {
+    const data = d.data();
+    const cat = data.category; // Pastikan data.category adalah 'exco1', 'exco2', dll
+    if (!grouped[cat]) grouped[cat] = [];
+    if (data.active !== false) grouped[cat].push({ id: d.id, ...data });
+  });
+  // Sort setiap kumpulan
+  Object.keys(grouped).forEach((key) => grouped[key].sort((a, b) => a.name.localeCompare(b.name)));
+  setLiveCandidates(grouped);
+});
+
+    const currentCandidates = useMemo(
+      () => liveCandidates[activeCategory] || [], // Terus guna activeCategory
+      [activeCategory, liveCandidates]
+    );
 
     return () => { unsubUser(); unsubSettings(); unsubCandidates(); };
   }, [navigate]);
 
   const isLocked = activeCategory === LOCKED_CATEGORY || !activeCategory || !isValidCategory(activeCategory);
   const currentCategoryConfig = CATEGORIES[activeCategory];
-  const currentCandidates = useMemo(
-    () => liveCandidates[getCandidateGroupKeyLocal(activeCategory)] || [],
-    [activeCategory, liveCandidates]
-  );
   const hasVotedForCurrent = votedCategories.includes(activeCategory);
   
   const totalCategories = CATEGORY_IDS.length;
@@ -163,7 +166,7 @@ const VotingPage = () => {
               <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-6" />
               <h1 data-translate="votingCompleted" className="text-2xl font-black mb-3">Voting Completed</h1>
               <p data-translate="votingCompletedDesc" className="text-slate-600 text-sm mb-8">Thank you. Your selections are secured.</p>
-              <button onClick={async () => { await updateDoc(doc(db, "voting", auth.currentUser.uid), { hasVoted: true }); navigate('/dashboard'); }} className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold" data-translate="returnDashboard">Return to Dashboard</button>
+              <button onClick={async () => { await updateDoc(doc(db, "users", auth.currentUser.uid), { hasVoted: true }); navigate('/dashboard'); }} className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold" data-translate="returnDashboard">Return to Dashboard</button>
           </div>
       </div>
     );

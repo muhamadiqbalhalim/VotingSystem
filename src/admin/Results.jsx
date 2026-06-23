@@ -61,7 +61,7 @@ const Results = () => {
     const fetchResults = async () => {
       try {
         const [votersSnapshot, candidatesSnapshot] = await Promise.all([
-          getDocs(collection(db, 'voting')),
+          getDocs(collection(db, 'users')),
           getDocs(collection(db, 'candidates'))
         ]);
         const voterList = [];

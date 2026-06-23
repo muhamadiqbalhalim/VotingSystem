@@ -63,7 +63,7 @@ const UserRegister = () => {
       <div className="relative mx-auto flex min-h-screen w-full max-w-7xl">
         
         {/* Sidebar KSNSSB */}
-        <aside className="hidden lg:flex w-[50%] flex-col justify-center px-12 py-16 bg-gradient-to-br from-white/80 via-blue-50/50 to-white/70 backdrop-blur-xl border-r border-slate-200">
+        <aside className="flex w-[50%] flex-col justify-center px-12 py-16 bg-gradient-to-br from-white/80 via-blue-50/50 to-white/70 backdrop-blur-xl border-r border-slate-200">
           <div className="space-y-10">
             <div className="inline-flex items-center gap-3 rounded-full border border-blue-200/50 bg-white/80 px-4 py-2.5 shadow-sm w-fit">
               <img src={logo} alt="KSNSSB Logo" className="h-8 w-auto object-contain" />
