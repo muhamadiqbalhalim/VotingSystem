@@ -56,14 +56,14 @@ const UserRegister = () => {
     }
   };
 
-  return (
+return (
     <div className="min-h-screen relative bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 text-slate-900 overflow-x-hidden">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.08),transparent_25%)]" />
       
-      <div className="relative mx-auto flex min-h-screen w-full max-w-7xl">
+      <div className="relative mx-auto flex min-h-screen w-full max-w-7xl items-center justify-center">
         
-        {/* Sidebar KSNSSB */}
-        <aside className="flex w-[50%] flex-col justify-center px-12 py-16 bg-gradient-to-br from-white/80 via-blue-50/50 to-white/70 backdrop-blur-xl border-r border-slate-200">
+        {/* Sidebar KSNSSB - DITUKAR KEPADA hidden lg:flex */}
+        <aside className="hidden lg:flex w-[50%] flex-col justify-center px-12 py-16 bg-gradient-to-br from-white/80 via-blue-50/50 to-white/70 backdrop-blur-xl border-r border-slate-200 min-h-screen">
           <div className="space-y-10">
             <div className="inline-flex items-center gap-3 rounded-full border border-blue-200/50 bg-white/80 px-4 py-2.5 shadow-sm w-fit">
               <img src={logo} alt="KSNSSB Logo" className="h-8 w-auto object-contain" />
@@ -90,9 +90,9 @@ const UserRegister = () => {
           </div>
         </aside>
 
-        {/* Main Content */}
-        <main className="flex-1 flex items-center justify-center p-6">
-          <div className="w-full max-w-md p-10 rounded-3xl border border-slate-200/50 bg-white/60 backdrop-blur-md shadow-2xl">
+        {/* Main Content - Lebarkan sedikit pada mobile */}
+        <main className="flex-1 flex items-center justify-center p-6 w-full">
+          <div className="w-full max-w-md p-6 lg:p-10 rounded-3xl border border-slate-200/50 bg-white/60 backdrop-blur-md shadow-2xl">
             
             <div className="flex justify-center gap-1 mb-8 bg-slate-100 p-1 rounded-2xl border border-slate-200">
                 {['en', 'ne', 'bn', 'ms'].map((lang) => (
@@ -103,7 +103,7 @@ const UserRegister = () => {
             </div>
 
             <div className="mb-8">
-              <h3 data-translate="registerTitle" className="text-3xl font-black text-slate-900">Pendaftaran Pengguna</h3>
+              <h3 data-translate="registerTitle" className="text-2xl lg:text-3xl font-black text-slate-900">Pendaftaran Pengguna</h3>
               <p data-translate="registerSubtitle" className="text-sm text-slate-600 mt-2">Daftar akaun pengundi selamat anda.</p>
             </div>
 
