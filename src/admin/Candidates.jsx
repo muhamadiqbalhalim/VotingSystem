@@ -1,17 +1,7 @@
 import { useState, useEffect } from 'react';
 import { db } from '../firebase/config';
-import {
-  collection,
-  addDoc,
-  doc,
-  onSnapshot,
-  query,
-  orderBy,
-  serverTimestamp,
-  updateDoc
-} from 'firebase/firestore';
-
-import { PlusCircle, Trash2 } from 'lucide-react';
+import { collection, addDoc, doc, onSnapshot, query, orderBy, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { PlusCircle, Trash2, Users } from 'lucide-react';
 import { CATEGORY_LIST } from '../lib/electionConfig';
 
 const Candidates = () => {
@@ -23,10 +13,7 @@ const Candidates = () => {
   useEffect(() => {
     const q = query(collection(db, 'candidates'), orderBy('createdAt', 'desc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = [];
-      snapshot.forEach((doc) => {
-        data.push({ id: doc.id, ...doc.data() });
-      });
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setCandidates(data);
       setLoading(false);
     });
@@ -45,7 +32,6 @@ const Candidates = () => {
       });
       setName('');
     } catch (error) {
-      console.error(error);
       alert('Gagal menambah calon.');
     }
   };
@@ -55,28 +41,26 @@ const Candidates = () => {
     try {
       await updateDoc(doc(db, 'candidates', id), { active: false, archivedAt: serverTimestamp() });
     } catch (error) {
-      console.error(error);
       alert('Gagal memadam calon.');
     }
   };
 
-  // Fungsi untuk menapis dan memaparkan senarai mengikut kategori
   const renderCandidateGroup = (ids) => {
     const filtered = candidates.filter(c => c.active !== false && ids.includes(c.category));
-    if (filtered.length === 0) return <p className="text-sm text-slate-500 italic p-4">Tiada calon.</p>;
+    if (filtered.length === 0) return <p className="text-xs text-slate-400 italic px-4">Tiada calon di sini.</p>;
     
     return (
-      <div className="space-y-3">
-        {filtered.map((candidate) => (
-          <div key={candidate.id} className="glass-panel-soft border-slate-200 rounded-2xl p-5 flex justify-between items-center bg-white">
+      <div className="grid gap-3">
+        {filtered.map((c) => (
+          <div key={c.id} className="bg-white border border-slate-100 rounded-2xl p-4 flex items-center justify-between shadow-sm hover:border-blue-200 transition-all">
             <div>
-              <h3 className="font-bold text-lg text-slate-900">{candidate.name}</h3>
-              <p className="text-sm text-blue-600 font-medium">
-                {CATEGORY_LIST.find(c => c.id === candidate.category)?.title}
+              <h3 className="font-bold text-sm text-slate-900">{c.name}</h3>
+              <p className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">
+                {CATEGORY_LIST.find(cat => cat.id === c.category)?.title}
               </p>
             </div>
-            <button onClick={() => handleDelete(candidate.id)} className="text-red-600 hover:bg-red-100 p-2 rounded-xl transition">
-              <Trash2 size={18} />
+            <button onClick={() => handleDelete(c.id)} className="text-slate-400 hover:text-red-600 transition p-2">
+              <Trash2 size={16} />
             </button>
           </div>
         ))}
@@ -88,46 +72,49 @@ const Candidates = () => {
   const excoIds = ['exco1', 'exco2', 'exco3'];
 
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-8 text-slate-900">
-      <div>
-        <h1 className="text-3xl font-black text-slate-900">Pengurusan Calon</h1>
-        <p className="text-slate-600 mt-1">Tambah dan uruskan calon pilihan raya.</p>
-      </div>
-
-      <div className="glass-panel-soft rounded-[2rem] border-slate-200 p-6 bg-white">
-        <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-4">
-          <input
-            type="text"
-            placeholder="Nama Calon"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="flex-1 px-4 py-3 border border-slate-300 rounded-xl bg-slate-50"
-            required
-          />
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="px-4 py-3 border border-slate-300 rounded-xl bg-slate-50"
-          >
-            {CATEGORY_LIST.map((item) => (
-              <option key={item.id} value={item.id}>{item.title}</option>
-            ))}
-          </select>
-          <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2">
-            <PlusCircle size={18} /> Tambah Calon
-          </button>
-        </form>
-      </div>
-
-      <div className="space-y-8">
-        <div>
-          <h2 className="font-black text-slate-900 mb-4 uppercase tracking-wider">Jawatan Utama</h2>
-          {loading ? <p className="text-slate-500">Sedang memuatkan...</p> : renderCandidateGroup(utamaIds)}
+    <div className="space-y-8 animate-in fade-in duration-500">
+      <div className="flex items-center gap-3">
+        <div className="p-3 bg-blue-600 text-white rounded-2xl">
+          <Users size={20} />
         </div>
         <div>
-          <h2 className="font-black text-slate-900 mb-4 uppercase tracking-wider">Jawatankuasa Kerja</h2>
-          {loading ? <p className="text-slate-500">Sedang memuatkan...</p> : renderCandidateGroup(excoIds)}
+          <h1 className="text-xl font-black text-slate-900">Pengurusan Calon</h1>
+          <p className="text-xs text-slate-500">Tambah dan uruskan senarai calon pilihan raya.</p>
         </div>
+      </div>
+
+      <form onSubmit={handleSubmit} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-xl grid md:grid-cols-[1fr,auto,auto] gap-4">
+        <input
+          type="text"
+          placeholder="Nama Calon"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="w-full px-4 py-3 border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+          required
+        />
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className="px-4 py-3 border border-slate-200 rounded-2xl text-sm outline-none cursor-pointer"
+        >
+          {CATEGORY_LIST.map((item) => (
+            <option key={item.id} value={item.id}>{item.title}</option>
+          ))}
+        </select>
+        <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all">
+          <PlusCircle size={18} /> Tambah
+        </button>
+      </form>
+
+      <div className="grid md:grid-cols-2 gap-8">
+        <section>
+          <h2 className="font-black text-slate-900 mb-4 text-xs uppercase tracking-widest text-slate-400">Jawatan Utama</h2>
+          {loading ? <p className="text-xs text-slate-400">Sedang memuatkan...</p> : renderCandidateGroup(utamaIds)}
+        </section>
+        <section>
+          <h2 className="font-black text-slate-900 mb-4 text-xs uppercase tracking-widest text-slate-400">Jawatankuasa Kerja</h2>
+          {loading ? <p className="text-xs text-slate-400">Sedang memuatkan...</p> : renderCandidateGroup(excoIds)}
+        </section>
       </div>
     </div>
   );

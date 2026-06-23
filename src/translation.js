@@ -15,9 +15,56 @@ export const translations = {
     noAccount: "Don't have an account?",
     createAccount: "Create one now",
     
-    // Sidebar
+    // Sidebar & Common
     sidebarTitle: "Integrity Voting System",
     sidebarDescription: "Register your account to participate in the transparent and secure Namicoh Suria Sdn Bhd voting process.",
+    adminPanel: "Admin Panel",
+    centerConsole: "Central Control Console",
+    navElectionControl: "Election Control",
+    navCandidates: "Candidates",
+    navResults: "Results",
+
+    // Dashboard
+    dashboardTitle: "Voting Portal",
+    dashboardSubtitle: "KSNSSB E-Voting System • Integrity in every vote",
+    voterLabel: "Registered Voter",
+    orgLabel: "Organization",
+    voteSubmitted: "Vote Submitted",
+    voteNotCast: "Vote Not Yet Cast",
+    votingDone: "Voting Completed",
+    beginVoting: "→ Begin Voting",
+    logout: "Logout",
+
+    // Voting Page
+    activeBallot: "Active Ballot",
+    selectNominees: "Select your candidates",
+    submitBallot: "Submit Ballot",
+    votingCompleted: "Voting Completed",
+    votingCompletedDesc: "Thank you. Your selections are securely recorded.",
+    returnDashboard: "Return to Dashboard",
+    votingNotOpen: "Voting Not Open Yet",
+    reviewBallot: "Review your ballot",
+    confirm: "Confirm",
+    back: "Back",
+
+    // Results Page
+    resultsTitle: "KSNSSB Election Results",
+    resultsSubtitle: "Comprehensive Voting Report for Kesatuan Sekerja Namicoh Suria Sdn Bhd",
+    publicResults: "Public Results View",
+    exportExcel: "Export Excel Report",
+    totalRegistered: "Total Registered Members",
+    totalVotesReceived: "Votes Received",
+    turnoutRate: "Voter Turnout",
+    voteBreakdown: "Vote Breakdown",
+    mainPositions: "Main Positions",
+    committeeMembers: "Committee Members",
+    voterRecords: "Voter Records",
+    voterRecordsDesc: "Click to view individual voter selections",
+    noVotesRecorded: "No votes recorded.",
+    totalVotes: "Total votes:",
+    voted: "Voted",
+    notVoted: "Not Voted",
+    voterChoices: "Voter Choices:",
   },
 
   ms: {
@@ -36,9 +83,56 @@ export const translations = {
     noAccount: "Tiada akaun?",
     createAccount: "Daftar sekarang",
 
-    // Sidebar
+    // Sidebar & Common
     sidebarTitle: "Sistem Pengundian Berintegriti",
     sidebarDescription: "Daftar akaun anda untuk menyertai proses pengundian Namicoh Suria Sdn Bhd yang telus dan selamat.",
+    adminPanel: "Panel Admin KSNSSB",
+    centerConsole: "Konsol Kawalan Pusat",
+    navElectionControl: "Kawalan Pilihan Raya",
+    navCandidates: "Calon",
+    navResults: "Keputusan",
+
+    // Dashboard
+    dashboardTitle: "Portal Pengundian",
+    dashboardSubtitle: "Sistem E-Undi KSNSSB • Integriti dalam setiap undian",
+    voterLabel: "Ahli Berdaftar",
+    orgLabel: "Organisasi",
+    voteSubmitted: "Undian Telah Dihantar",
+    voteNotCast: "Undian Belum Dibuat",
+    votingDone: "Pengundian Selesai",
+    beginVoting: "→ Mulakan Undian",
+    logout: "Log Keluar",
+
+    // Voting Page
+    activeBallot: "Kertas Undi Aktif",
+    selectNominees: "Pilih calon anda",
+    submitBallot: "Hantar Undi",
+    votingCompleted: "Pengundian Selesai",
+    votingCompletedDesc: "Terima kasih. Undian anda telah direkodkan dengan selamat.",
+    returnDashboard: "Kembali ke Dashboard",
+    votingNotOpen: "Pengundian Belum Dibuka",
+    reviewBallot: "Semak undian anda",
+    confirm: "Sahkan",
+    back: "Kembali",
+
+    // Results Page
+    resultsTitle: "Keputusan Pemilihan KSNSSB",
+    resultsSubtitle: "Laporan Pengundian Komprehensif Kesatuan Sekerja Namicoh Suria Sdn Bhd",
+    publicResults: "Paparan Keputusan Awam",
+    exportExcel: "Eksport Laporan Excel",
+    totalRegistered: "Jumlah Ahli Berdaftar",
+    totalVotesReceived: "Undian Diterima",
+    turnoutRate: "Kadar Keluar Mengundi",
+    voteBreakdown: "Pecahan Undian",
+    mainPositions: "Jawatan Utama",
+    committeeMembers: "Jawatankuasa Kerja",
+    voterRecords: "Rekod Pengundi",
+    voterRecordsDesc: "Klik untuk lihat pilihan setiap pengundi",
+    noVotesRecorded: "Tiada undian direkodkan.",
+    totalVotes: "Jumlah undi:",
+    voted: "Telah Mengundi",
+    notVoted: "Belum Mengundi",
+    voterChoices: "Pilihan Pengundi:",
   },
 
   bn: {
@@ -57,9 +151,56 @@ export const translations = {
     noAccount: "অ্যাকাউন্ট নেই?",
     createAccount: "এখনই তৈরি করুন",
     
-    // Sidebar
+    // Sidebar & Common
     sidebarTitle: "সততা ভোটদান সিস্টেম",
     sidebarDescription: "একটি স্বচ্ছ এবং নিরাপদ নামিকো সুরিয়া সdn বিএইচডি ভোটদান প্রক্রিয়ায় অংশ নিতে আপনার অ্যাকাউন্ট নিবন্ধন করুন।",
+    adminPanel: "KSNSSB অ্যাডমিন প্যানেল",
+    centerConsole: "সেন্ট্রাল কন্ট্রোল কনসোল",
+    navElectionControl: "নির্বাচন নিয়ন্ত্রণ",
+    navCandidates: "প্রার্থী",
+    navResults: "ফলাফল",
+
+    // Dashboard
+    dashboardTitle: "ভোটিং পোর্টাল",
+    dashboardSubtitle: "KSNSSB ই-ভোটিং সিস্টেম • প্রতিটি ভোটে সততা",
+    voterLabel: "নিবন্ধিত ভোটার",
+    orgLabel: "প্রতিষ্ঠান",
+    voteSubmitted: "ভোট জমা দেওয়া হয়েছে",
+    voteNotCast: "ভোট এখনো দেওয়া হয়নি",
+    votingDone: "ভোটিং সম্পন্ন হয়েছে",
+    beginVoting: "→ ভোটিং শুরু করুন",
+    logout: "লগ আউট",
+
+    // Voting Page
+    activeBallot: "সক্রিয় ব্যালট",
+    selectNominees: "আপনার প্রার্থী নির্বাচন করুন",
+    submitBallot: "ভোট জমা দিন",
+    votingCompleted: "ভোটিং সম্পন্ন হয়েছে",
+    votingCompletedDesc: "ধন্যবাদ। আপনার ভোট নিরাপদে রেকর্ড করা হয়েছে।",
+    returnDashboard: "ড্যাশবোর্ডে ফিরে যান",
+    votingNotOpen: "ভোটিং এখনো শুরু হয়নি",
+    reviewBallot: "আপনার ভোট পর্যালোচনা করুন",
+    confirm: "নিশ্চিত করুন",
+    back: "ফিরে যান",
+
+    // Results Page
+    resultsTitle: "KSNSSB নির্বাচনের ফলাফল",
+    resultsSubtitle: "কেসাতুয়ান সেকেরজা নামিকো সুরিয়া সdn বিএইচডি-এর বিস্তারিত ভোটিং রিপোর্ট",
+    publicResults: "প্রকাশ্য ফলাফল",
+    exportExcel: "এক্সেল রিপোর্ট এক্সপোর্ট",
+    totalRegistered: "নিবন্ধিত সদস্য",
+    totalVotesReceived: "প্রাপ্ত ভোট",
+    turnoutRate: "ভোটদানের হার",
+    voteBreakdown: "ভোটের বিভাজন",
+    mainPositions: "প্রধান পদসমূহ",
+    committeeMembers: "কার্যকরী সদস্য",
+    voterRecords: "ভোটার রেকর্ড",
+    voterRecordsDesc: "ভোটারের পছন্দ দেখতে ক্লিক করুন",
+    noVotesRecorded: "কোন ভোট রেকর্ড করা হয়নি।",
+    totalVotes: "মোট ভোট:",
+    voted: "ভোট দিয়েছেন",
+    notVoted: "ভোট দেননি",
+    voterChoices: "ভোটারের পছন্দ:",
   },
 
   ne: {
@@ -78,8 +219,55 @@ export const translations = {
     noAccount: "खाता छैन?",
     createAccount: "अहिले नै सिर्जना गर्नुहोस्",
     
-    // Sidebar
+    // Sidebar & Common
     sidebarTitle: "अखण्डता मतदान प्रणाली",
     sidebarDescription: "पारदर्शी र सुरक्षित नामिको सुरिया सdn Bhd मतदान प्रक्रियामा भाग लिन आफ्नो खाता दर्ता गर्नुहोस्।",
+    adminPanel: "KSNSSB एडमिन प्यानल",
+    centerConsole: "केन्द्रीय नियन्त्रण कन्सोल",
+    navElectionControl: "चुनाव नियन्त्रण",
+    navCandidates: "उम्मेदवारहरू",
+    navResults: "परिणाम",
+
+    // Dashboard
+    dashboardTitle: "मतदान पोर्टल",
+    dashboardSubtitle: "KSNSSB ई-भोटिङ प्रणाली • प्रत्येक भोटमा निष्ठा",
+    voterLabel: "दर्ता भएका मतदाता",
+    orgLabel: "संस्था",
+    voteSubmitted: "भोट पेश गरियो",
+    voteNotCast: "भोट दिन बाँकी",
+    votingDone: "मतदान सम्पन्न भयो",
+    beginVoting: "→ मतदान सुरु गर्नुहोस्",
+    logout: "लग-आउट",
+
+    // Voting Page
+    activeBallot: "सक्रिय मतपत्र",
+    selectNominees: "तपाईंको उम्मेदवार चयन गर्नुहोस्",
+    submitBallot: "मतदान पेश गर्नुहोस्",
+    votingCompleted: "मतदान सम्पन्न भयो",
+    votingCompletedDesc: "धन्यवाद। तपाईंको छनोट सुरक्षित रूपमा रेकर्ड गरिएको छ।",
+    returnDashboard: "ड्यासबोर्डमा फर्कनुहोस्",
+    votingNotOpen: "मतदान अझै खुलेको छैन",
+    reviewBallot: "तपाईंको मत समीक्षा गर्नुहोस्",
+    confirm: "पुष्टि गर्नुहोस्",
+    back: "पछाडि",
+
+    // Results Page
+    resultsTitle: "KSNSSB निर्वाचन परिणाम",
+    resultsSubtitle: "केसतुआन सेकेर्जा नामिको सुरिया सdn Bhd को विस्तृत मतदान रिपोर्ट",
+    publicResults: "सार्वजनिक परिणाम",
+    exportExcel: "एक्सल रिपोर्ट एक्सपोर्ट",
+    totalRegistered: "कुल दर्ता सदस्य",
+    totalVotesReceived: "प्राप्त मत",
+    turnoutRate: "मतदान दर",
+    voteBreakdown: "मतको विभाजन",
+    mainPositions: "मुख्य पदहरू",
+    committeeMembers: "समिति सदस्यहरू",
+    voterRecords: "मतदाता रेकर्ड",
+    voterRecordsDesc: "मतदाताको छनोट हेर्न क्लिक गर्नुहोस्",
+    noVotesRecorded: "कुनै मत रेकर्ड गरिएको छैन।",
+    totalVotes: "कुल मत:",
+    voted: "भोट दिएको",
+    notVoted: "भोट नदिएको",
+    voterChoices: "मतदाताको छनोट:",
   },
 };

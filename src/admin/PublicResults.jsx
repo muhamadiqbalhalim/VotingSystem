@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react';
 import { db } from '../firebase/config';
 import { collection, getDocs } from 'firebase/firestore';
-import { Award, TrendingUp, Loader2 } from 'lucide-react';
+import { Award, TrendingUp, Loader2, Trophy, BarChart3 } from 'lucide-react';
 import { CATEGORY_LIST } from '../lib/electionConfig';
 
 const PublicResults = () => {
   const [tally, setTally] = useState({});
   const [loading, setLoading] = useState(true);
 
-  // Kumpulan ID Jawatan
   const utamaIds = ['president', 'deputy', 'vice', 'secretary', 'assistant_secretary', 'treasurer', 'assistant_treasurer'];
   const excoIds = ['exco1', 'exco2', 'exco3'];
 
@@ -18,10 +17,8 @@ const PublicResults = () => {
         getDocs(collection(db, 'users')),
         getDocs(collection(db, 'candidates'))
       ]);
-
       const candMap = {};
       candSnap.forEach(d => candMap[d.id] = d.data().name);
-
       const voteCount = {};
       votersSnap.docs.filter(v => v.data().role !== 'admin').forEach(voter => {
         const votes = voter.data().votes || {};
@@ -40,8 +37,8 @@ const PublicResults = () => {
   }, []);
 
   const renderSection = (ids, title) => (
-    <div className="mb-10">
-      <h2 className="text-2xl font-black mb-6 uppercase text-slate-800 border-b pb-2">{title}</h2>
+    <div className="mb-12 animate-in fade-in zoom-in duration-700">
+      <h2 className="text-xl font-black text-slate-400 uppercase tracking-[0.3em] mb-8 text-center">{title}</h2>
       <div className="grid lg:grid-cols-2 gap-6">
         {ids.map(id => {
           const category = CATEGORY_LIST.find(c => c.id === id);
@@ -50,20 +47,30 @@ const PublicResults = () => {
           const total = Object.values(votes).reduce((a,b) => a+b, 0);
 
           return (
-            <div key={id} className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-              <h3 className="font-bold text-blue-600 mb-4 text-lg">{category?.title}</h3>
+            <div key={id} className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/50 hover:shadow-2xl transition-all">
+              <h3 className="font-black text-blue-900 mb-6 text-xl flex items-center gap-2">
+                <BarChart3 className="text-blue-500" size={20}/> {category?.title}
+              </h3>
               {sorted.length > 0 ? (
-                <div className="space-y-3">
+                <div className="space-y-5">
                   {sorted.map(([name, count], idx) => (
-                    <div key={name} className={`flex justify-between items-center p-3 rounded-lg ${idx === 0 ? 'bg-yellow-50 border border-yellow-200' : 'bg-slate-50'}`}>
-                      <span className={`font-bold ${idx === 0 ? 'text-yellow-700' : 'text-slate-700'}`}>
-                        {idx === 0 && <Award size={16} className="inline mr-2"/>} {name}
-                      </span>
-                      <span className="font-black">{count} undi</span>
+                    <div key={name} className="relative">
+                      <div className="flex justify-between items-end mb-1 text-sm">
+                        <span className={`font-bold ${idx === 0 ? 'text-blue-700' : 'text-slate-600'}`}>
+                          {idx === 0 && <Trophy size={14} className="inline mr-1 text-yellow-500"/>} {name}
+                        </span>
+                        <span className="font-black text-slate-900">{count} <span className="text-slate-400 font-normal">undi</span></span>
+                      </div>
+                      <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+                        <div 
+                          className={`h-full rounded-full transition-all duration-1000 ${idx === 0 ? 'bg-gradient-to-r from-blue-500 to-indigo-600' : 'bg-slate-300'}`}
+                          style={{ width: `${total > 0 ? (count / total) * 100 : 0}%` }}
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>
-              ) : <p className="text-slate-400 italic">Tiada undian</p>}
+              ) : <p className="text-slate-400 italic text-center py-4">Tiada undian direkodkan</p>}
             </div>
           );
         })}
@@ -71,16 +78,26 @@ const PublicResults = () => {
     </div>
   );
 
-  if (loading) return <div className="flex h-screen items-center justify-center"><Loader2 className="animate-spin" size={40}/></div>;
+  if (loading) return <div className="flex h-screen items-center justify-center"><Loader2 className="animate-spin text-blue-600" size={48}/></div>;
 
   return (
-    <div className="max-w-6xl mx-auto p-8 bg-slate-50 min-h-screen">
-      <div className="text-center mb-12">
-        <h1 className="text-5xl font-black text-slate-900">Keputusan Rasmi Pilihan Raya</h1>
-        <p className="text-slate-600 mt-2">KSNSSB - Keputusan Telus & Sah</p>
+    <div className="min-h-screen bg-slate-50 py-16 px-4">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-20">
+          <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-blue-600 text-white font-bold mb-6 shadow-lg shadow-blue-500/30">
+            <TrendingUp size={18}/> KEPUTUSAN RASMI
+          </div>
+          <h1 className="text-6xl font-black text-slate-900 mb-4 tracking-tight">Keputusan Pilihan Raya</h1>
+          <p className="text-slate-500 text-lg font-medium">KSNSSB - Keputusan Telus, Sah, dan Berintegriti</p>
+        </div>
+        
+        {renderSection(utamaIds, "Jawatan Utama")}
+        {renderSection(excoIds, "Jawatankuasa Kerja")}
+
+        <footer className="text-center text-slate-400 text-sm mt-20 border-t pt-8">
+          © 2026 KSNSSB - Sistem Pengundian Berintegriti
+        </footer>
       </div>
-      {renderSection(utamaIds, "Jawatan Utama")}
-      {renderSection(excoIds, "Jawatankuasa Kerja")}
     </div>
   );
 };
