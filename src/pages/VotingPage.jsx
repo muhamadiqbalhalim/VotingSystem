@@ -55,12 +55,22 @@ const VotingPage = () => {
     });
 
     const unsubCandidates = onSnapshot(collection(db, "candidates"), (snapshot) => {
-      const grouped = { president: [], deputy: [], vice: [], secretary: [], assistant_secretary: [], treasurer: [], assistant_treasurer: [], exco: [] };
+      // Kekalkan struktur asal yang mengasingkan kategori
+      const grouped = { 
+        president: [], deputy: [], vice: [], secretary: [], assistant_secretary: [], 
+        treasurer: [], assistant_treasurer: [], exco1: [], exco2: [], exco3: [] 
+      };
+      
       snapshot.forEach((d) => {
         const data = d.data();
-        const groupKey = data?.category?.toString().startsWith('exco') ? 'exco' : data.category;
-        if (grouped[groupKey] && data.active !== false) grouped[groupKey].push({ id: d.id, ...data });
+        const cat = data.category; // Gunakan kategori asal (exco1, exco2, atau exco3)
+        
+        // Pastikan kategori wujud dalam grouped dan calon aktif
+        if (grouped.hasOwnProperty(cat) && data.active !== false) {
+          grouped[cat].push({ id: d.id, ...data });
+        }
       });
+
       Object.keys(grouped).forEach((key) => grouped[key].sort((a, b) => a.name.localeCompare(b.name)));
       setLiveCandidates(grouped);
     });
