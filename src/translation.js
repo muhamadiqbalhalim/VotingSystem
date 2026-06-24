@@ -75,7 +75,7 @@ export const translations = {
     registerSubtitle: "Sila isi maklumat akaun anda.",
     fullNamePlaceholder: "Nama Penuh",
     companyPlaceholder: "Nama Syarikat",
-    emailPlaceholder: "emel@contoh.com",
+    emailPlaceholder: "nama@company.com",
     passwordPlaceholder: "Kata Laluan",
     signIn: "Daftar Sekarang",
     alreadyHaveAccount: "Sudah ada akaun?",
