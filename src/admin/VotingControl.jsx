@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { db } from '../firebase/config';
 import { doc, setDoc, onSnapshot } from 'firebase/firestore';
 import { Lock, AlertTriangle, Settings } from 'lucide-react';
-import { CATEGORY_LIST, LOCKED_CATEGORY } from '../lib/electionConfig';
+import { CATEGORIES, CATEGORY_LIST, LOCKED_CATEGORY } from '../lib/electionConfig'; // Pastikan import CATEGORIES
 import { initializeWithDetection } from '../languageTranslator.js';
 
 const VotingControl = () => {
@@ -71,7 +71,10 @@ const VotingControl = () => {
         <div className="bg-slate-900 text-white rounded-2xl p-6 mb-6">
           <p className="text-[10px] uppercase font-bold opacity-60">Status Semasa</p>
           <h2 className="text-xl font-black mt-1">
-            {activeCategory === LOCKED_CATEGORY ? 'Pengundian Ditutup' : `Sedang Aktif: ${activeCategory.toUpperCase()}`}
+            {/* PERUBAHAN DI SINI: Guna CATEGORIES[activeCategory]?.title */}
+            {activeCategory === LOCKED_CATEGORY 
+              ? 'Pengundian Ditutup' 
+              : `Sedang Aktif: ${CATEGORIES[activeCategory]?.title || activeCategory.toUpperCase()}`}
           </h2>
         </div>
 
