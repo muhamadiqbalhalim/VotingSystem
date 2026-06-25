@@ -47,7 +47,6 @@ const Candidates = () => {
     }
   };
 
-  // Fungsi untuk memaparkan calon mengikut jawatan spesifik secara tersusun
   const renderGroupedCandidates = (categoryIds) => {
     return categoryIds.map((catId) => {
       const catConfig = CATEGORIES[catId];
@@ -61,9 +60,9 @@ const Candidates = () => {
           <div className="space-y-2">
             {filtered.length > 0 ? (
               filtered.map((c) => (
-                <div key={c.id} className="bg-white border border-slate-100 rounded-2xl p-4 flex items-center justify-between shadow-sm hover:border-blue-200 transition-all">
-                  <span className="font-bold text-sm text-slate-900">{c.name}</span>
-                  <button onClick={() => handleDelete(c.id)} className="text-slate-400 hover:text-red-600 transition p-1">
+                <div key={c.id} className="bg-white border border-slate-100 rounded-2xl p-4 flex items-center justify-between shadow-sm hover:border-blue-200 transition-all overflow-hidden">
+                  <span className="font-bold text-sm text-slate-900 truncate mr-3">{c.name}</span>
+                  <button onClick={() => handleDelete(c.id)} className="text-slate-400 hover:text-red-600 transition p-1 shrink-0">
                     <Trash2 size={16} />
                   </button>
                 </div>
@@ -90,14 +89,32 @@ const Candidates = () => {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-xl grid md:grid-cols-[1fr,auto,auto] gap-4">
-        <input type="text" placeholder="Nama Calon" value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-blue-500" required />
-        <select value={category} onChange={(e) => setCategory(e.target.value)} className="px-4 py-3 border border-slate-200 rounded-2xl text-sm outline-none cursor-pointer">
+      {/* BERIKUT ADALAH BAHAGIAN YANG TELAH DIKEMAS KINI */}
+      <form 
+        onSubmit={handleSubmit} 
+        className="bg-white p-5 md:p-6 rounded-3xl border border-slate-100 shadow-xl flex flex-col md:grid md:grid-cols-[1fr,auto,auto] gap-4 w-full"
+      >
+        <input 
+          type="text" 
+          placeholder="Nama Calon" 
+          value={name} 
+          onChange={(e) => setName(e.target.value)} 
+          className="w-full px-4 py-3 border border-slate-200 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-blue-500" 
+          required 
+        />
+        <select 
+          value={category} 
+          onChange={(e) => setCategory(e.target.value)} 
+          className="w-full md:w-auto px-4 py-3 border border-slate-200 rounded-2xl text-sm outline-none cursor-pointer"
+        >
           {CATEGORY_LIST.map((item) => (
             <option key={item.id} value={item.id}>{item.title}</option>
           ))}
         </select>
-        <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all">
+        <button 
+          type="submit" 
+          className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all"
+        >
           <PlusCircle size={18} /> Tambah
         </button>
       </form>
