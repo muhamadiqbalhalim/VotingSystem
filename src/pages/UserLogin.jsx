@@ -37,7 +37,7 @@ const UserLogin = () => {
       }
       if (userDoc.data().role === "admin") navigate("/admin");
       else navigate("/dashboard");
-    } catch (err) {
+    } catch {
       setError("Emel atau kata laluan tidak sah.");
     } finally {
       setLoading(false);

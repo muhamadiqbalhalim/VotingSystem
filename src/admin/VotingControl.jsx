@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { db } from '../firebase/config';
-import { doc, setDoc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, serverTimestamp, setDoc } from 'firebase/firestore';
 import { Lock, AlertTriangle, Settings } from 'lucide-react';
 import { CATEGORIES, CATEGORY_LIST, LOCKED_CATEGORY } from '../lib/electionConfig'; // Pastikan import CATEGORIES
 import { initializeWithDetection } from '../languageTranslator.js';
 
 const VotingControl = () => {
   const [activeCategory, setActiveCategory] = useState(LOCKED_CATEGORY);
-  const [loading, setLoading] = useState(false);
+  const [pendingCategory, setPendingCategory] = useState(null);
 
   useEffect(() => {
     initializeWithDetection();
@@ -15,22 +15,27 @@ const VotingControl = () => {
       if (snapshot.exists()) {
         setActiveCategory(snapshot.data().activeCategory || LOCKED_CATEGORY);
       }
+      setPendingCategory(null);
     });
     return () => unsubscribe();
   }, []);
 
   const handleSwitch = async (category) => {
+    if (category === activeCategory || pendingCategory) return;
     if (!window.confirm("Tukar status pengundian?")) return;
-    setLoading(true);
+    const previousCategory = activeCategory;
+    setActiveCategory(category);
+    setPendingCategory(category);
     try {
       await setDoc(doc(db, 'settings', 'election'), {
         activeCategory: category,
-        updatedAt: new Date().toISOString()
+        updatedAt: serverTimestamp()
       }, { merge: true });
     } catch (error) {
+      console.error('Failed to update voting status:', error);
+      setActiveCategory(previousCategory);
+      setPendingCategory(null);
       alert('Gagal mengemaskini status.');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -43,14 +48,14 @@ const VotingControl = () => {
           <button
             key={cat.id}
             onClick={() => handleSwitch(cat.id)}
-            disabled={loading}
+            disabled={Boolean(pendingCategory)}
             className={`p-4 rounded-2xl border-2 font-bold text-xs transition-all ${
               activeCategory === cat.id
                 ? 'border-blue-600 bg-blue-50 text-blue-700'
                 : 'border-slate-100 bg-white hover:border-slate-200'
-            }`}
+            } disabled:cursor-not-allowed disabled:opacity-70`}
           >
-            {cat.title}
+            {pendingCategory === cat.id ? 'Mengemaskini...' : cat.title}
           </button>
         );
       })}
@@ -80,10 +85,10 @@ const VotingControl = () => {
 
         <button
           onClick={() => handleSwitch(LOCKED_CATEGORY)}
-          disabled={loading || activeCategory === LOCKED_CATEGORY}
-          className="w-full py-4 rounded-2xl font-bold text-xs bg-red-600 text-white hover:bg-red-700 transition-all flex items-center justify-center gap-2 mb-8"
+          disabled={Boolean(pendingCategory) || activeCategory === LOCKED_CATEGORY}
+          className="w-full py-4 rounded-2xl font-bold text-xs bg-red-600 text-white hover:bg-red-700 transition-all flex items-center justify-center gap-2 mb-8 disabled:bg-slate-300 disabled:cursor-not-allowed"
         >
-          <Lock size={16} /> Tutup Semua Pengundian
+          <Lock size={16} /> {pendingCategory === LOCKED_CATEGORY ? 'Mengemaskini...' : 'Tutup Semua Pengundian'}
         </button>
 
         <div className="space-y-6">

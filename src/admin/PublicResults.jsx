@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { db } from '../firebase/config';
 import { collection, getDocs } from 'firebase/firestore';
-import { Award, TrendingUp, Loader2, Trophy, BarChart3 } from 'lucide-react';
+import { TrendingUp, Loader2, Trophy, BarChart3 } from 'lucide-react';
 import { CATEGORY_LIST } from '../lib/electionConfig';
 
 const PublicResults = () => {
@@ -95,7 +95,7 @@ const PublicResults = () => {
         {renderSection(excoIds, "Jawatankuasa Kerja")}
 
         <footer className="text-center text-slate-400 text-sm mt-20 border-t pt-8">
-          © 2026 KSNSSB - Sistem Pengundian Berintegriti
+          (c) 2026 KSNSSB - Sistem Pengundian Berintegriti
         </footer>
       </div>
     </div>

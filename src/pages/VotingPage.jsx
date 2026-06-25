@@ -1,16 +1,17 @@
-import { useMemo, useState, useEffect, useLayoutEffect } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle, AlertCircle, Lock, CheckSquare, Square, Loader2, ShieldCheck, X } from 'lucide-react';
+import { CheckCircle, Lock, CheckSquare, Square } from 'lucide-react';
 
 import { db, auth } from '../firebase/config';
 import {
-  arrayUnion,
   collection,
   doc,
   onSnapshot,
+  query,
   runTransaction,
   serverTimestamp,
-  updateDoc
+  updateDoc,
+  where
 } from "firebase/firestore";
 import { CATEGORIES, CATEGORY_IDS, LOCKED_CATEGORY, isValidCategory } from '../lib/electionConfig';
 import { initializeWithDetection } from '../languageTranslator.js';
@@ -23,9 +24,10 @@ const VotingPage = () => {
   const [votedCategories, setVotedCategories] = useState([]); 
   const [showReview, setShowReview] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  
-  // Menggunakan struktur yang memadankan semua ID dalam CATEGORY_IDS
-  const [liveCandidates, setLiveCandidates] = useState({});
+  const [loadingUser, setLoadingUser] = useState(true);
+  const [loadingSettings, setLoadingSettings] = useState(true);
+  const [candidateSnapshot, setCandidateSnapshot] = useState({ category: null, candidates: [] });
+  const activeCategoryRef = useRef(null);
   
   const navigate = useNavigate();
 
@@ -44,40 +46,62 @@ const VotingPage = () => {
         if (userData.role === 'admin') { navigate('/admin'); return; }
         setVotedCategories(userData.votedCategories || []);
       }
+      setLoadingUser(false);
+    }, () => {
+      setError('Unable to load voter profile.');
+      setLoadingUser(false);
     });
 
     const unsubSettings = onSnapshot(doc(db, "settings", "election"), (docSnap) => {
-      setActiveCategory(docSnap.exists() ? docSnap.data().activeCategory : LOCKED_CATEGORY);
+      const nextCategory = docSnap.exists() ? docSnap.data().activeCategory : LOCKED_CATEGORY;
+      if (activeCategoryRef.current !== nextCategory) {
+        activeCategoryRef.current = nextCategory;
+        setSelections([]);
+        setError('');
+        setShowReview(false);
+        setTimeout(initializeWithDetection, 100);
+      }
+      setActiveCategory(nextCategory);
+      setLoadingSettings(false);
+    }, () => {
+      activeCategoryRef.current = LOCKED_CATEGORY;
+      setActiveCategory(LOCKED_CATEGORY);
+      setLoadingSettings(false);
     });
 
-    const unsubCandidates = onSnapshot(collection(db, "candidates"), (snapshot) => {
-      const grouped = {};
-      // Inisialisasi setiap kategori yang ada dalam electionConfig
-      CATEGORY_IDS.forEach(id => grouped[id] = []);
-      
-      snapshot.forEach((d) => {
-        const data = d.data();
-        const cat = data.category;
-        if (grouped.hasOwnProperty(cat) && data.active !== false) {
-          grouped[cat].push({ id: d.id, ...data });
-        }
-      });
-      Object.keys(grouped).forEach((key) => grouped[key].sort((a, b) => a.name.localeCompare(b.name)));
-      setLiveCandidates(grouped);
-    });
-
-    return () => { unsubUser(); unsubSettings(); unsubCandidates(); };
+    return () => { unsubUser(); unsubSettings(); };
   }, [navigate]);
+
+  useEffect(() => {
+    if (!activeCategory || activeCategory === LOCKED_CATEGORY || !isValidCategory(activeCategory)) {
+      return undefined;
+    }
+
+    const candidatesQuery = query(
+      collection(db, "candidates"),
+      where("category", "==", activeCategory),
+      where("active", "==", true)
+    );
+
+    const unsubscribe = onSnapshot(candidatesQuery, (snapshot) => {
+      const candidates = snapshot.docs
+        .map((d) => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+      setCandidateSnapshot({ category: activeCategory, candidates });
+    }, () => {
+      setError('Unable to load candidates for this ballot.');
+    });
+
+    return () => unsubscribe();
+  }, [activeCategory]);
 
   const isLocked = activeCategory === LOCKED_CATEGORY || !activeCategory || !isValidCategory(activeCategory);
   const currentCategoryConfig = CATEGORIES[activeCategory];
-  
-  // Perubahan kunci: Rujuk terus kepada activeCategory tanpa getCandidateGroupKey untuk membezakan exco1, 2, 3
   const currentCandidates = useMemo(
-    () => liveCandidates[activeCategory] || [],
-    [activeCategory, liveCandidates]
+    () => candidateSnapshot.category === activeCategory ? candidateSnapshot.candidates : [],
+    [activeCategory, candidateSnapshot]
   );
-  
+  const loadingCandidates = !isLocked && candidateSnapshot.category !== activeCategory;
   const hasVotedForCurrent = votedCategories.includes(activeCategory);
   const totalCategories = CATEGORY_IDS.length;
   const completedCategoryCount = CATEGORY_IDS.filter((categoryId) => votedCategories.includes(categoryId)).length;
@@ -85,30 +109,29 @@ const VotingPage = () => {
 
   const selectedCandidates = useMemo(() => currentCandidates.filter((c) => selections.includes(c.id)), [currentCandidates, selections]);
 
-  useEffect(() => {
-    setSelections([]);
-    setError('');
-    setShowReview(false);
-    setTimeout(initializeWithDetection, 100);
-  }, [activeCategory]);
-
-  const toggleSelection = (candidateId) => {
+  const toggleSelection = useCallback((candidateId) => {
     if (loading) return;
     setError('');
-    let updated = selections.includes(candidateId) 
-      ? selections.filter(id => id !== candidateId)
-      : [...selections, candidateId];
-    
-    const max = currentCategoryConfig?.max || 1;
-    if (updated.length > max) {
-      setError(`Maximum selection limit reached. You can only choose up to ${max} candidate${max > 1 ? 's' : ''}.`);
-      return;
-    }
-    setSelections(updated);
-  };
+    setSelections((current) => {
+      const updated = current.includes(candidateId)
+        ? current.filter(id => id !== candidateId)
+        : [...current, candidateId];
+
+      const max = currentCategoryConfig?.max || 1;
+      if (updated.length > max) {
+        setError(`Maximum selection limit reached. You can only choose up to ${max} candidate${max > 1 ? 's' : ''}.`);
+        return current;
+      }
+      return updated;
+    });
+  }, [currentCategoryConfig?.max, loading]);
 
   const handleSubmitVote = async () => {
     if (selections.length < 1) { setError('Please select at least 1 candidate.'); return; }
+    if (selectedCandidates.length !== selections.length) {
+      setError('Candidate list changed. Please review your selection again.');
+      return;
+    }
     setShowReview(true);
   };
 
@@ -124,19 +147,45 @@ const VotingPage = () => {
         const userSnap = await transaction.get(userRef);
         const settingsSnap = await transaction.get(settingsRef);
         
+        if (!userSnap.exists()) {
+          throw new Error('USER_NOT_FOUND');
+        }
         if (!settingsSnap.exists() || settingsSnap.data().activeCategory !== activeCategory) {
           throw new Error('VOTING_PHASE_CHANGED');
         }
+        if (!isValidCategory(activeCategory)) {
+          throw new Error('INVALID_CATEGORY');
+        }
+
+        const maxSelections = CATEGORIES[activeCategory].max || 1;
+        const uniqueSelections = Array.from(new Set(selections));
+        if (uniqueSelections.length !== selections.length || uniqueSelections.length < 1 || uniqueSelections.length > maxSelections) {
+          throw new Error('INVALID_SELECTION');
+        }
+
+        const candidateSnaps = await Promise.all(
+          uniqueSelections.map((candidateId) => transaction.get(doc(db, "candidates", candidateId)))
+        );
+        const candidateNames = candidateSnaps.map((candidateSnap) => {
+          const data = candidateSnap.data();
+          if (!candidateSnap.exists() || data.category !== activeCategory || data.active === false) {
+            throw new Error('INVALID_SELECTION');
+          }
+          return data.name;
+        });
 
         const currentVoted = userSnap.data()?.votedCategories || [];
+        if (currentVoted.includes(activeCategory)) {
+          throw new Error('ALREADY_VOTED');
+        }
         const updatedVoted = Array.from(new Set([...currentVoted, activeCategory]));
         const isLastVote = updatedVoted.length >= CATEGORY_IDS.length;
 
         transaction.update(userRef, {
-          [`votes.${activeCategory}`]: selections,
+          [`votes.${activeCategory}`]: uniqueSelections,
           [`voteDetails.${activeCategory}`]: {
-            candidateIds: selections,
-            candidateNames: selectedCandidates.map(c => c.name),
+            candidateIds: uniqueSelections,
+            candidateNames,
             category: activeCategory,
             submittedAt: serverTimestamp()
           },
@@ -152,11 +201,26 @@ const VotingPage = () => {
       setTimeout(() => setIsSubmitted(false), 3000);
     } catch (err) {
       console.error("Voting Error:", err);
-      setError(err.message === 'VOTING_PHASE_CHANGED' ? 'The voting phase has changed.' : 'Transmission Error.');
+      const message = err.message === 'VOTING_PHASE_CHANGED'
+        ? 'The voting phase has changed.'
+        : err.message === 'ALREADY_VOTED'
+          ? 'Your vote for this category is already recorded.'
+          : err.message === 'INVALID_SELECTION'
+            ? 'Your selection is no longer valid. Please choose again.'
+            : 'Transmission Error.';
+      setError(message);
     } finally {
       setLoading(false);
     }
   };
+
+  if (loadingUser || loadingSettings) return (
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div className="bg-white px-6 py-4 rounded-2xl shadow-sm text-sm font-bold text-slate-500">
+        Preparing ballot...
+      </div>
+    </div>
+  );
 
   if (isSubmitted) return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
@@ -210,6 +274,16 @@ const VotingPage = () => {
         {error && <div className="mb-8 p-5 bg-red-50 text-red-700 rounded-2xl font-bold text-center">{error}</div>}
 
         <div className="space-y-3 mb-10">
+          {loadingCandidates && (
+            <div className="p-6 rounded-[2rem] border-2 border-slate-100 bg-slate-50 text-center text-sm font-bold text-slate-400">
+              Loading candidates...
+            </div>
+          )}
+          {!loadingCandidates && currentCandidates.length === 0 && (
+            <div className="p-6 rounded-[2rem] border-2 border-amber-100 bg-amber-50 text-center text-sm font-bold text-amber-700">
+              No active candidates for this ballot.
+            </div>
+          )}
           {currentCandidates.map((c) => (
             <div key={c.id} onClick={() => toggleSelection(c.id)} className={`p-6 rounded-[2rem] border-2 cursor-pointer flex items-center justify-between ${selections.includes(c.id) ? 'border-blue-400 bg-blue-50' : 'border-slate-200 bg-white'}`}>
               <h3 className="font-black text-xl">{c.name}</h3>
@@ -218,7 +292,7 @@ const VotingPage = () => {
           ))}
         </div>
 
-        <button onClick={handleSubmitVote} className="w-full py-5 bg-blue-700 text-white rounded-3xl font-black" data-translate="submitBallot">Submit Ballot</button>
+        <button onClick={handleSubmitVote} disabled={loading || loadingCandidates || currentCandidates.length === 0} className="w-full py-5 bg-blue-700 text-white rounded-3xl font-black disabled:bg-slate-300 disabled:cursor-not-allowed" data-translate="submitBallot">Submit Ballot</button>
       </div>
 
       {showReview && (
@@ -227,8 +301,8 @@ const VotingPage = () => {
             <h2 data-translate="reviewBallot" className="text-xl font-black mb-4">Review your ballot</h2>
             <div className="space-y-2 mb-6">{selectedCandidates.map(c => <div key={c.id} className="bg-slate-100 p-3 rounded-xl font-bold">{c.name}</div>)}</div>
             <div className="grid grid-cols-2 gap-3">
-              <button onClick={() => setShowReview(false)} className="py-3 border rounded-2xl font-bold" data-translate="back">Back</button>
-              <button onClick={confirmSubmitVote} className="py-3 bg-blue-700 text-white rounded-2xl font-bold" data-translate="confirm">Confirm</button>
+              <button onClick={() => setShowReview(false)} disabled={loading} className="py-3 border rounded-2xl font-bold disabled:opacity-60" data-translate="back">Back</button>
+              <button onClick={confirmSubmitVote} disabled={loading} className="py-3 bg-blue-700 text-white rounded-2xl font-bold disabled:bg-slate-300" data-translate="confirm">{loading ? 'Submitting...' : 'Confirm'}</button>
             </div>
           </div>
         </div>

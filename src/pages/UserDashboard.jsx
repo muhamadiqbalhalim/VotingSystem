@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, User, Building2, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import logo from '../assets/logo.png';
@@ -12,6 +12,15 @@ const UserDashboard = () => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  const handleLogout = useCallback(async () => {
+    try {
+      await signOut(auth);
+      localStorage.clear();
+      sessionStorage.clear();
+      navigate('/login');
+    } catch (error) { console.error(error); }
+  }, [navigate]);
 
   useEffect(() => {
     initializeWithDetection();
@@ -35,18 +44,9 @@ const UserDashboard = () => {
       }
     });
     return () => unsubscribe();
-  }, [navigate]);
+  }, [handleLogout, navigate]);
 
   const completedVoting = userData?.hasVoted || (userData?.votedCategories?.length || 0) >= CATEGORY_IDS.length;
-
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      localStorage.clear();
-      sessionStorage.clear();
-      navigate('/login');
-    } catch (error) { console.error(error); }
-  };
 
   if (loading) {
     return (
@@ -63,7 +63,7 @@ const UserDashboard = () => {
         <div className="text-center mb-10">
           <img src={logo} alt="Logo" className="h-12 mx-auto mb-4 object-contain" />
           <h1 data-translate="dashboardTitle" className="text-4xl lg:text-5xl font-black text-slate-900">Voting Portal</h1>
-          <p data-translate="dashboardSubtitle" className="text-sm text-slate-500 mt-2">KSNSSB E-Voting System • Integrity in every vote</p>
+          <p data-translate="dashboardSubtitle" className="text-sm text-slate-500 mt-2">KSNSSB E-Voting System - Integrity in every vote</p>
         </div>
 
         {/* User Info */}
@@ -103,7 +103,7 @@ const UserDashboard = () => {
             className={`w-full rounded-2xl py-4 font-bold transition-all ${completedVoting ? 'bg-slate-200 text-slate-500 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg'}`}
           >
             <span data-translate={completedVoting ? "votingDone" : "beginVoting"}>
-              {completedVoting ? 'Voting Completed' : '→ Begin Voting'}
+              {completedVoting ? 'Voting Completed' : 'Begin Voting'}
             </span>
           </button>
 

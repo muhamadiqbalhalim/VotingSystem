@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Lock, Mail, User, Building2, Loader2, ArrowRight, Eye, EyeOff } from "lucide-react";
+import { Lock, Mail, User, Building2, Loader2, Eye, EyeOff } from "lucide-react";
 import logo from "../assets/logo.png";
 import { auth, db } from "../firebase/config";
 import { createUserWithEmailAndPassword } from "firebase/auth";

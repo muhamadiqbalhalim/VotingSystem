@@ -32,6 +32,7 @@ const Candidates = () => {
       });
       setName('');
     } catch (error) {
+      console.error('Failed to add candidate:', error);
       alert('Gagal menambah calon.');
     }
   };
@@ -41,6 +42,7 @@ const Candidates = () => {
     try {
       await updateDoc(doc(db, 'candidates', id), { active: false, archivedAt: serverTimestamp() });
     } catch (error) {
+      console.error('Failed to archive candidate:', error);
       alert('Gagal memadam calon.');
     }
   };
